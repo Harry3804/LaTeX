@@ -1,1 +1,176 @@
+\documentclass[a4paper,11pt]{report}
+\usepackage{exscale,relsize,makeidx}
+\usepackage{amsmath,amsthm,latexsym,amssymb,amsfonts,graphicx}
+\usepackage{fancyhdr}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage[colorlinks=black,linkcolor=blue, citecolor=red]{hyperref}
+\usepackage{url}
+\usepackage[top=.75in, left=.75in, right=.75in, bottom=1in]{geometry}
+\usepackage[utf8]{vietnam} 
+\usepackage{tikz,pgf,tkz-tab}
+\usepackage{ulem}
+\usepackage{titlesec}
+\usepackage{indentfirst}
+\usepackage{xparse}
+\usepackage{framed}
+\usepackage{sectsty}
+\definecolor{MyBlue}{rgb}{0.2,0.5,0.75}
+\colorlet{NextBlue}{MyBlue!100}
+\colorlet{shadecolor}{MyBlue!5}
+\sectionfont{\Huge}
+\setcounter{secnumdepth}{4}
+% Styling for the code.
+
+% Disable indentation on new paragraphs
+\setlength{\parindent}{0pt}
+
+% Optional: graphic path
+% \graphicspath{PATH_TO_GRAPHIC_FOLDER}
+
+% To use Times font family, uncomment this row
+% \usepackage{mathptmx}
+
+% To use roman section / subsection, uncomment these rows
+% \renewcommand{\thesection}{\Roman{section}}
+% \renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
+\newtheorem{bt}{Bài toán}[section]
+\newcounter{dly}[section]\setcounter{dly}{0}
+\renewcommand{\thedly}{\arabic{section}.\arabic{dly}}
+\newenvironment{dly}[2][]{%
+\refstepcounter{dly}%
+\ifstrempty{#1}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=blue!20]
+{\strut Định lý~\thedly};}}
+}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=blue!20]
+{\strut Định lý~\thedly:~#1};}}%
+}%
+\mdfsetup{innertopmargin=10pt,linecolor=blue!20,%
+linewidth=2pt,topline=true,%
+frametitleaboveskip=\dimexpr-\ht\strutbox\relax
+}
+\begin{mdframed}[]\relax%
+\label{#2}}{\end{mdframed}}
+\newcounter{tc}[section]\setcounter{tc}{0}
+\renewcommand{\thetc}{\arabic{section}.\arabic{tc}}
+\newenvironment{tc}[2][]{%
+\refstepcounter{tc}%
+\ifstrempty{#1}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=yellow!70]
+{\strut Tính chất~\thetc};}}
+}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=yellow!70]
+{\strut Tính chất~\thetc:~#1};}}%
+}%
+\mdfsetup{innertopmargin=10pt,linecolor=yellow!70,%
+linewidth=2pt,topline=true,%
+frametitleaboveskip=\dimexpr-\ht\strutbox\relax
+}
+\begin{mdframed}[]\relax%
+\label{#2}}{\end{mdframed}}
+\newcounter{vd}[section]\setcounter{vd}{0}
+\renewcommand{\thevd}{\arabic{section}.\arabic{vd}}
+\newenvironment{vd}[2][]{%
+\refstepcounter{vd}%
+\ifstrempty{#1}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=green!30]
+{\strut Ví dụ~\thevd};}}
+}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=green!30]
+{\strut Ví dụ~\thevd:~#1};}}%
+}%
+\mdfsetup{innertopmargin=10pt,linecolor=green!30,%
+linewidth=2pt,topline=true,%
+frametitleaboveskip=\dimexpr-\ht\strutbox\relax
+}
+\begin{mdframed}[]\relax%
+\label{#2}}{\end{mdframed}}
+\newcounter{dn}[section] \setcounter{dn}{0}
+\renewcommand{\thedn}{\arabic{section}.\arabic{dn}}
+\newenvironment{dn}[2][]{%
+	\refstepcounter{dn}%
+	\ifstrempty{#1}%
+	{\mdfsetup{%
+			frametitle={%
+				\tikz[baseline=(current bounding box.east),outer sep=0pt]
+				\node[anchor=east,rectangle,fill=pink!120]
+				{\strut Định nghĩa~\thedn};}}
+	}%
+	{\mdfsetup{%
+			frametitle={%
+				\tikz[baseline=(current bounding box.east),outer sep=0pt]
+				\node[anchor=east,rectangle,fill=pink!120]
+				{\strut Định nghĩa~\thedn~(#1)};}}%
+	}%
+	\mdfsetup{innertopmargin=10pt,linecolor=pink!120,%
+		linewidth=2pt,topline=true,%
+		frametitleaboveskip=\dimexpr-\ht\strutbox\relax
+	}
+	\begin{mdframed}[]\relax%
+		\label{#2}}{\end{mdframed}}
+% Define course name, report name and report title.
+\newcommand{\reporttitle}{Các vấn đề cơ bản về tổ hợp}
+\newcommand{\leftfooter}{\LaTeX\ by \href{https://www.facebook.com/profile.php?id=100070620354157}{Nhóm Người đưa đò}}
+% ============ HEADER AND FOOTER ============
+% Header length
+\setlength{\headheight}{29.43912pt}
+% Footer page number would be on the lower-right corner
+\pagestyle{fancy}
+\fancyfoot{}
+\fancyfoot[R]{Trang \thepage}
+
+\lhead{GVHD: TS Tạ Thị Nguyệt Nga}
+\rhead{\reporttitle}
+\lfoot{\leftfooter}
+
+
+\lfoot{\leftfooter}
+    \newenvironment{frshaded*}{%
+    \def\FrameCommand{\fboxrule=\FrameRule\fboxsep=\FrameSep \fcolorbox{framecolor}{shadecolor}}%
+    \MakeFramed {\advance\hsize-\width \FrameRestore}}%
+    {\endMakeFramed}
+    \counterwithout{section}{chapter} %ĐếmSôsectionwithoutChapter
+% ============ DOCUMENT ============
+\begin{document}
+\input{content/title.tex}
+\fontsize{11pt}{13.5pt}\selectfont
+\tableofcontents
+
+\input{content/loimodau}
+\input{content/lydochondetai}
+\input{content/qtht}
+\input{content/phepdem}
+\input{content/hvthch}
+\input{content/cabtlq}
+\input{content/ungdung}
+\input{content/dirichlet}
+\input{content/ketluan} 
+\input{content/tailieuthamkhao}
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+% References
+
+
+% Appendix
+\appendix
+% Add \cleardoublepage to move appendices to next page.
+\input{appendix/appendix.tex}
+\end{document}
 
