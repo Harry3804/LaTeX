@@ -1,1 +1,186 @@
+\documentclass[12pt]{report}
+\usepackage{amsmath,amsthm,latexsym,amssymb,amsfonts,graphicx}
+\usepackage{float}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{fancyhdr}
+\usepackage{framed}
+\usepackage{titlesec} % For title formatting
+\usepackage[dvipsnames]{xcolor}   % For color definitions
+\usepackage{multirow}
+\usepackage{tikz,tkz-tab}
+\usepackage{array}
+\usepackage{mathptmx}
+\usepackage{sectsty}  % For customizing section fonts
+\usepackage{anyfontsize} % Allows font scaling
+\usetikzlibrary{calc,matrix}
+\usepackage[most]{tcolorbox}
+%\usepackage{background}
+
+%\usepackage{ifoddpage} trang chẵn trang lẻ
+\usepackage[colorlinks=true, linkcolor=Blue, citecolor=red, hidelinks]{hyperref}
+%\usepackage{tkz-euclide}
+\setcounter{chapter}{+5}
+\usepackage{url}
+\usepackage[top=.75in, left=.75in, right=.75in, bottom=1in]{geometry}
+\usepackage[utf8]{vietnam}
+% For algorithm
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\tcbuselibrary{listingsutf8}
+\definecolor{MyBlue}{rgb}{0.2,0.5,0.75}
+\colorlet{NextBlue}{MyBlue!200}
+\colorlet{shadecolor}{MyBlue!1}
+\usepackage{titlesec} % for formatting counters
+\usepackage{listings}
+\lstset{
+    language=Matlab,              % Chọn ngôn ngữ là MATLAB
+    basicstyle=\ttfamily\footnotesize, % Font chữ code
+    keywordstyle=\color{blue},     % Màu cho từ khóa
+    stringstyle=\color{red},        % Màu cho chuỗi
+    commentstyle=\color{green!70},  % Màu cho chú thích
+    backgroundcolor=\color{gray!10},% Màu nền
+    showstringspaces=false,         % Ẩn dấu cách trong chuỗi
+    numbers=left,                    % Đánh số dòng ở lề trái
+    numberstyle=\tiny\color{gray},   % Định dạng số dòng
+    frame=single,                    % Viền khung bao quanh
+    breaklines=true,                  % Tự động xuống dòng
+    tabsize=4                         % Độ rộng tab
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+\newtheoremstyle{myproofstyle}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{Blue}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnote{ (#3)}} % Theorem head spec (loại bỏ số thứ tự)
+
+% Áp dụng phong cách mới cho môi trường proof
+\theoremstyle{myproofstyle}
+\renewenvironment{proof}[1][\textbf{Lời giải}]{%
+  \par\pushQED{\qed}\normalfont%
+  \topsep0pt\relax%
+  \trivlist\item[\hskip\labelsep{\bfseries\color{Blue}#1.}]\ignorespaces%
+}{%
+  \popQED\endtrivlist%
+}
+%=============================
+%============= Bổ đề ==============
+\newtheoremstyle{mybt}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{Blue}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}} % Theorem head spec
+
+\theoremstyle{mybt}
+\newtheorem{bt}{\textbf{Bài toán}}
+% ============ CODE ============
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+% Styling for the code.
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\makeatother
+%======================================
+% Disable indentation on new paragraphs
+\setlength{\parindent}{0pt}
+
+% Optional: graphic path
+% \graphicspath{PATH_TO_GRAPHIC_FOLDER}
+
+% To use Times font family, uncomment this row
+% \usepackage{mathptmx}
+
+% To use roman section / subsection, uncomment these rows
+% \renewcommand{\thesection}{\Roman{section}}
+% \renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
+
+% Define course name, report name and report title.
+\newcommand{\coursename}{}
+\newcommand{\reportname}{}
+\newcommand{\reporttitle}{Cơ học môi trường liên tục}
+
+%\newcommand{\studentname}{Nguyễn Thanh Phong}
+%\newcommand{\teachername}{Các senpai}
+\newcommand{\leftfooter}{\textbf{\LaTeX\ by \href{https://www.facebook.com/profile.php?id=100049972770097}{Nguyễn Thanh Phong}}}
+
+% ============ HEADER AND FOOTER ============
+% Header length
+\setlength{\headheight}{29.43912pt}
+
+% Footer page number would be on the lower-right corner
+\pagestyle{fancy}
+\fancyfoot{}
+\fancyfoot[R]{\textbf{\textcolor{Blue}{Trang \thepage} }}
+
+\lhead{\textbf{\textcolor{Blue}{Trường Đại Học Khoa Học Tự Nhiên}}}
+\rhead{
+\textbf{\textcolor{Blue}{Cơ học môi trường liên tục
+}}}
+\lfoot{\leftfooter}
+\renewcommand{\headrule}{%
+    \color{Blue}% Đặt màu cho đường kẻ
+    \hrule width\headwidth height\headrulewidth \vskip-\headrulewidth
+}
+\renewcommand{\footrule}{%
+    \color{Blue}% Đặt màu cho đường kẻ
+    \hrule width\headwidth height\headrulewidth \vskip-\footrulewidth
+}
+%============= Box ===================
+
+\newenvironment{frshaded*}{%
+\def\FrameCommand{\fboxrule=\FrameRule\fboxsep=\FrameSep \fcolorbox{framecolor}{shadecolor}}%
+\MakeFramed {\advance\hsize-\width \FrameRestore}}%
+{\endMakeFramed}
+\input{content/chapsec.tex}
+%============ CHAPTER ==============
+\begin{document}
+\fontsize{14pt}{14pt}\selectfont
+\input{content/title}
+\tableofcontents
+\input{content/chuong6.tex}
+\input{content/5to7.tex}
+\input{content/8to10.tex}
+\input{content/thuattoan.tex}
+\input{content/code.tex}
+\input{content/tltk}
+\pagebreak
+
+
+% References
+
+
+% Appendix
+\appendix
+% Add \cleardoublepage to move appendices to next page.
+
+\end{document}
 
