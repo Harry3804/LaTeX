@@ -1,1 +1,96 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage{exscale,relsize,makeidx}
+\usepackage{amsmath,amsthm,latexsym,amssymb,amsfonts,graphicx}
+\usepackage{fancyhdr}
+\usepackage{asymptote}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage[colorlinks=true, linkcolor=BrickRed, citecolor=red, hidelinks]{hyperref}
+%\usepackage{tcb.sty}
+\usepackage{url}
+\usepackage[top=.75in, left=.75in, right=.75in, bottom=1in]{geometry}
+\usetikzlibrary{calc}
+\usepackage[utf8]{vietnam}
+\usepackage{tikz,pgf,tkz-tab}
+\usepackage{ulem}
+\usepackage[dvipsnames]{xcolor}   % For color definitions
+\usepackage{multirow}
+\usepackage{xparse}
+\usepackage{sectsty}
+%\usepackage{tgschola}
+\usepackage{mathptmx}
+\usepackage{titlesec}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+%\sectionfont{\Huge}
+\usepackage{mathpazo}
+\setcounter{secnumdepth}{4}
+% Styling for the code.
+% Disable indentation on new paragraphs
+\setlength{\parindent}{0pt}
+\input{defi1socai}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\newcommand{\sr}{\Rightarrow}
+\setlist[enumerate,1]{label=\textbf{Bước \arabic*:}, leftmargin=*, labelsep=1em}
+
+% Define course name, report name and report title.
+\newcommand{\reporttitle}{\textcolor{Blue}{\textbf{Phân loại một số kiểu quy nạp\\ 
+toán học và ứng dụng trong giải toán}}}
+\newcommand{\leftfooter}{\textbf{\LaTeX\ by \href{https://www.facebook.com/nguyen.thanh.phong.991351}{Nhóm Thợ Săn Số Nguyên Tố}}}
+%===================
+\usepackage{tocloft}
+\renewcommand{\cftchapnumwidth}{3em} % Điều chỉnh độ rộng số chương
+\renewcommand{\cftchapaftersnum}{\quad} % Thêm khoảng cách sau số chương
+
+
+
+% ============ HEADER AND FOOTER ============
+% Header length
+\setlength{\headheight}{29.43912pt}
+% Footer page number would be on the lower-right corner
+\pagestyle{fancy}
+\fancyfoot{}
+\fancyfoot[R]{\textbf{\textcolor{Blue}{Trang \thepage} }}
+\lhead{\textcolor{Blue}{\textbf{GVHD: TS Trần Nam Dũng}}}
+\rhead{\reporttitle}
+\lfoot{\leftfooter}
+\renewcommand{\headrule}{%
+    \color{Blue}% Đặt màu cho đường kẻ
+    \hrule width\headwidth height\headrulewidth \vskip-\headrulewidth
+}
+\renewcommand{\footrule}{%
+    \color{Blue}% Đặt màu cho đường kẻ
+    \hrule width\headwidth height\headrulewidth \vskip-\footrulewidth
+}
+
+\lfoot{\leftfooter}
+    \counterwithout{section}{chapter} %ĐếmSôsectionwithoutChapter
+% ============ DOCUMENT ============
+\begin{document}
+\setcounter{chapter}{+5}
+\input{content/title.tex}
+\tableofcontents
+
+\fontsize{13pt}{15pt}\selectfont
+\input{content/loicamon}
+\input{content/Khanhloimodau}
+\input{content/Khanhlydochondetai}
+\input{content/Khanhkhainiem}
+\input{content/Sep+Khai}
+\input{content/Khai}
+\input{content/Nhi}
+\input{content/Phong}
+\input{content/Khanhketluan} 
+\input{content/tailieuthamkhao}
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+% References
+
+
+% Appendix
+\appendix
+% Add \cleardoublepage to move appendices to next page.
+\input{appendix/appendix.tex}
+\end{document}
 
