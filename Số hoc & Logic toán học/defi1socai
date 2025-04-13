@@ -1,1 +1,144 @@
+% Định dạng số chương thành La Mã với font TeX Gyre Schola
+\renewcommand{\thechapter}{%
+  {\fontfamily{qcs}\selectfont\Roman{chapter}} % Font TeX Gyre Schola
+}
 
+\titleformat{\chapter}[display]
+  {\normalfont\sffamily\color{Blue}\fontsize{30}{30}\selectfont\bfseries} % Định dạng chữ cho tiêu đề chương
+  {\parbox[b]{\linewidth}{\hfill\text{Phần} \thechapter}} % Số chương, căn sang phải
+  {0pt} % Không có khoảng cách giữa số chương và tiêu đề
+  {\vspace{0.5cm}\titlerule[0.5pt]\vspace{0.5cm}\hfill} % Đường kẻ ngang và căn phải tiêu đề
+  [\Huge\hfill] % Căn phải tiêu đề chương
+% Định dạng tiêu đề cho section
+% Định nghĩa lại \section
+\titleformat{\section}
+  {\sffamily\LARGE\bfseries} % Định dạng font và kích thước chữ
+  {\textcolor{Blue}{\thesection}} % Định dạng ký hiệu và màu sắc
+  {1em} % Khoảng cách giữa ký hiệu và tiêu đề
+  {} % Không thêm ký hiệu gì trước tiêu đề
+  % Định nghĩa lại \subsection
+\titleformat{\subsection}
+  {\sffamily\Large\bfseries} % Định dạng font và kích thước chữ
+  {\textcolor{Blue}{\thesubsection}} % Định dạng ký hiệu và màu sắc
+  {1em} % Khoảng cách giữa ký hiệu và tiêu đề
+  {} % Không thêm ký hiệu gì trước tiêu đề
+%============= Loi giai ==============
+\newtheoremstyle{mytheoremstyle}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{magenta}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}} % Theorem head spec
+
+% Apply the custom style to your theorem
+\theoremstyle{mytheoremstyle}
+\newtheorem*{sol}{\textbf{Lời giải}}
+
+% Redefine the "sol" environment to include QED
+\renewenvironment{sol}{%
+  \begin{trivlist} % Start a simple list (no extra formatting)
+  \item[\hskip \labelsep \textbf{\color{magenta}Lời giải.}] % Custom label
+}{%
+  \hfill $\qed$ % Automatically insert QED symbol
+  \end{trivlist} % End the list
+}
+%============== box bài toán ====================
+\newtcolorbox{tcb2}{
+  colframe=cyan,
+  colback=cyan!10,
+  left=1mm,  % Thickness of the left border
+  right=0mm,  % No right border
+  top=1.5mm,  % Top border
+  bottom=1.5mm,  % Bottom border
+  boxrule=0mm,  % General border thickness
+  leftrule=1.2mm,  % Specific thickness for the left border
+  arc=0mm,  % No corner rounding
+  outer arc=0mm  % No outer corner rounding
+}
+% Định nghĩa môi trường "bt" trong "tcb2"
+
+\newtheorem{btbase}{Bài toán} % Định nghĩa cơ bản cho môi trường "bt"
+
+\newenvironment{bt}{%
+  \begin{tcb2} % Bắt đầu hộp "tcb2"
+  \begin{btbase} % Bắt đầu môi trường "btbase"
+}{%
+  \end{btbase} % Kết thúc môi trường "btbase"
+  \end{tcb2} % Kết thúc hộp "tcb2"
+}
+%
+%============= Định nghĩa ==============
+\newtheoremstyle{mydefistyle}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{NavyBlue}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}} % Theorem head spec
+
+\theoremstyle{mydefistyle}
+\newtheorem{md}{\textbf{Mệnh đề}}
+
+%============= Định lý ==============
+\newtheoremstyle{mytheostyle}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{Plum}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}} % Theorem head spec
+
+\theoremstyle{mytheostyle}
+\newtheorem{dly}{\textbf{Định lý}}
+
+%============= Bổ đề ==============
+\newtheoremstyle{mylemma}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{ForestGreen}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ (#3)}} % Theorem head spec
+
+\theoremstyle{mylemma}
+\newtheorem{lem}{\textbf{Bổ đề}}
+%============= Chứng minh ==============
+% Định nghĩa phong cách mới cho chứng minh
+\newtheoremstyle{myproofstyle}
+  {0pt} % Space above
+  {0pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries\color{Brown}} % Theorem head font
+  {.} % Punctuation after theorem head
+  { } % Space after theorem head
+  {\thmname{#1}\thmnote{ (#3)}} % Theorem head spec (loại bỏ số thứ tự)
+
+% Áp dụng phong cách mới cho môi trường proof
+\theoremstyle{myproofstyle}
+\renewenvironment{proof}[1][\textbf{Chứng minh}]{%
+  \par\pushQED{\qed}\normalfont%
+  \topsep0pt\relax%
+  \trivlist\item[\hskip\labelsep{\bfseries\color{Brown}#1.}]\ignorespaces%
+}{%
+  \popQED\endtrivlist%
+}
+%======== Khung tóm tắt
+\newtcolorbox{tcb1}[2][]{ % Định nghĩa môi trường tcb1
+    colback=red!2!white,
+    colframe=cyan!75!black,
+    title=\centering\textbf{Tóm tắt: #2}, % Căn giữa tiêu đề và loại bỏ bộ đếm
+    fonttitle=\bfseries,
+    sharp corners,
+    halign=center, % Căn giữa nội dung trong hộp
+    #1
+}
