@@ -1,0 +1,175 @@
+//---------------------------------------
+// Tác giả macro: NGUYỄN THANH PHONG
+// Chức năng: Vẽ Hình Xác Suất Thống Kê (TikZ)
+// Gói phụ thuộc: \usepackage{tikz}, \usetikzlibrary{patterns, shadows, arrows.meta}
+//---------------------------------------
+var box = new UniversalInputDialog();
+box.setWindowTitle("Vẽ Hình Xác Suất Thống Kê");
+
+// Danh sách các hình thống kê
+var dsHinhThongKe = [
+"1. Chia hình tròn",
+"2. Biểu đồ cột",
+"3. Biểu đồ cột kép",
+"4. Sơ đồ cây"
+];
+
+box.add(dsHinhThongKe, "Chọn loại hình cần chèn:", "LuaChonHinhTK");
+
+// Lưu trữ 4 đoạn code TikZ vào mảng
+var dataHinhThongKe = [
+// 1. Chia hình tròn
+[
+"\\begin{tikzpicture}[scale=1, font=\\footnotesize,line join=round, line cap=round, >=stealth]",
+"\t\\def\\n{1};",
+"\t\\def\\r{2};",
+"\t\\pgfmathsetmacro\\nn{\\n+6};",
+"\t\\pgfmathsetmacro\\a{360/\\nn};",
+"\t\\def\\gxp{90};",
+"\t\\foreach \\i in {1,2,...,\\nn}",
+"\t{\\draw ({\\gxp+\\i*\\a}:\\r)--({\\gxp+\\i*\\a+3*\\a}:\\r);",
+	"\t\t\\fill ({\\gxp+\\i*\\a}:\\r) circle (1pt);}",
+"\t\\draw (0,0) circle (\\r);",
+"\t\\path (current bounding box.south) node[below=2mm]{$n=\\n$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 2. Biểu đồ cột
+[
+"\\begin{tikzpicture}[>=stealth,line join=round,line cap=round,font=\\footnotesize,scale=0.78,line width=1pt]",
+"\t\\draw[->] (0,0)--(0,7)node[left]{\\text{Y-Label}};",
+"\t\\draw[->] (0,0)node[shift={(-135:.4)}]{$O$}--(9.5,0)node[shift={(-40:.6)}]{\\text{X-Label}};",
+"\t\\foreach \\y in {1,2,3,4,5,6}",
+"\t\\draw[shift={(0,\\y)}] (0,0)--(-2pt,0) node[left]{\\scriptsize ${\\y}$};",
+"\t\\foreach \\y in {1,2,3,4,5,6}{",
+	"\t\t\\draw[dashed,thin,line width=0.01pt] (0,\\y)--(6,\\y);",
+	"\t}",
+"\t\\foreach \\x/\\y in {1/3,2/4,3/6,4/5,5/5,6/2}",
+"\t\\draw[line cap=round,pattern=dots] (\\x,0) rectangle (\\x+1,\\y);",
+"\t",
+"\t\\foreach \\x/\\y in {1/V1,2/V2,3/V3,4/V4,5/V5,6/V6,7/V7}",
+"\t\\path (\\x,0)node[shift={(-90:.4)}]{$\\y$};",
+"\t\\path (4,7.8)node[shift={(90:.2)},scale=1.2]{\\textbf{Chart Title}};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 3. Biểu đồ cột kép
+[
+"\\begin{tikzpicture}[line join=round, line cap=round,>=stealth,xscale=1,yscale=1]",
+"\t\\def\\a{1}",
+"\t\\def\\xmax{12}",
+"\t\\def\\ymax{8}",
+"\t\\tikzset{label style/.style={font=\\footnotesize}}",
+"\t\\draw[->] (0,0)--(\\xmax,0) node[below] {\\text{X-Label}};",
+"\t\\draw[->] (0,0)--(0,\\ymax) node[below left] {\\text{Y-Label}};",
+"\t\\draw (0,0) node [below left] {$0$};",
+"\t\\draw[dashed,thin,gray!60]",
+"\t(0,1)--(\\xmax,1)",
+"\t(0,2)--(\\xmax,2)",
+"\t(0,3)--(\\xmax,3)",
+"\t(0,4)--(\\xmax,4)",
+"\t(0,5)--(\\xmax,5)",
+"\t(0,6)--(\\xmax,6)",
+"\t(0,7)--(\\xmax,7)",
+"\t;",
+"\t\\foreach \\i in {1,2,3,4,5,6,7}{",
+	"\t\t\\draw (0,\\i) node[left]{$\\i$};",
+	"\t}",
+"\t\\foreach \\i/\\j in {1*\\a/L1,3*\\a/L2,5*\\a/L3,7*\\a/L4,9*\\a/L5}{",
+	"\t\t\\draw (\\i,-.5) node[below]{\\small $\\j$};",
+	"\t}",
+"\t\\fill[pattern = north west lines,pattern color=blue]",
+"\t(0,0) rectangle (\\a,4)",
+"\t(2*\\a,0) rectangle (3*\\a,5)",
+"\t(4*\\a,0) rectangle (5*\\a,3)",
+"\t(6*\\a,0) rectangle (7*\\a,4)",
+"\t(8*\\a,0) rectangle (9*\\a,2);",
+"\t\\fill[pattern = dots,pattern color=violet]",
+"\t(\\a,0) rectangle (2*\\a,2)",
+"\t(3*\\a,0) rectangle (4*\\a,5)",
+"\t(5*\\a,0) rectangle (6*\\a,4)",
+"\t(7*\\a,0) rectangle (8*\\a,3)",
+"\t(9*\\a,0) rectangle (10*\\a,1);",
+"\t\\begin{scope}",
+"\t\t\\draw ",
+"\t\t(0,4)--(\\a,4) ",
+"\t\t(\\a,2)--(2*\\a,2)",
+"\t\t(2*\\a,5)--(3*\\a,5)",
+"\t\t(3*\\a,5)--(4*\\a,5)",
+"\t\t(4*\\a,3)--(5*\\a,3)",
+"\t\t(5*\\a,4)--(6*\\a,4)",
+"\t\t(6*\\a,4)--(7*\\a,4)",
+"\t\t(7*\\a,3)--(8*\\a,3)",
+"\t\t(8*\\a,2)--(9*\\a,2)",
+"\t\t(9*\\a,1)--(10*\\a,1)",
+"\t\t(0,0)--(0,4)",
+"\t\t(\\a,0)--(\\a,4)",
+"\t\t(2*\\a,0)--(2*\\a,5)",
+"\t\t(3*\\a,0)--(3*\\a,5)",
+"\t\t(4*\\a,0)--(4*\\a,5)",
+"\t\t(5*\\a,0)--(5*\\a,4)",
+"\t\t(6*\\a,0)--(6*\\a,4)",
+"\t\t(7*\\a,0)--(7*\\a,4)",
+"\t\t(8*\\a,0)--(8*\\a,3)",
+"\t\t(9*\\a,0)--(9*\\a,2)",
+"\t\t(10*\\a,0)--(10*\\a,1);",
+"\t\t\\draw (6,\\ymax+1) node[above]{\\textbf{Chart Title}};",
+"\t\\end{scope}",
+"\t\\fill[pattern = north west lines,pattern color=blue,draw] (10,6.5) rectangle(10.5,7)node[midway, right=2mm]{Series A};",
+"\t\\fill[pattern = dots,pattern color=violet,draw] (10,5.5) rectangle (10.5,6)node[midway, right=2mm]{Series B};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 4. Sơ đồ cây
+[
+"\\begin{tikzpicture}[node distance=1.5cm, every node/.style={fill=white}, align=center]",
+"\t\\definecolor{diagram_bg_green}{HTML}{d5e8d4}",
+"\t\\definecolor{diagram_bg_blue}{HTML}{dae8fc}",
+"\t\\definecolor{diagram_bg_pink}{HTML}{f8cecc}",
+"\t\\definecolor{diagram_bd_green}{HTML}{82b366}",
+"\t\\definecolor{diagram_bd_blue}{HTML}{7494c2}",
+"\t\\definecolor{diagram_bd_pink}{HTML}{b85450}",
+"\t\\tikzset{>={Latex[width=2mm,length=2mm]}, base/.style = {rectangle, rounded corners, draw=black, minimum width=1cm, minimum height=1cm, text centered, drop shadow={shadow xshift=0.6mm, shadow yshift=-0.6mm}},",
+	"\t\tStyle1/.style = {base, fill=diagram_bg_blue, draw=diagram_bd_blue},",
+	"\t\tStyle2/.style = {base, fill=diagram_bg_pink, draw=diagram_bd_pink},",
+	"\t\tStyle3/.style = {base, fill=diagram_bg_green, draw=diagram_bd_green},",
+	"\t\tStyle4/.style = {base, minimum width=2.5cm, fill=orange!15, draw=orange},",
+	"\t}",
+"\t\\node (B0) [Style1, text width=1cm] {Root};",
+"\t\\node (B1) [Style2, right of=B0, xshift=4cm, yshift=2cm, text width=4cm] {Event A};",
+"\t\\node (B3) [Style2, right of=B0, xshift=4cm, yshift=-2cm, text width=4cm] {Event $\\overline{A}$};",
+"\t\\node (B11) [Style3, right of=B1, xshift=6.5cm, yshift=1.2cm, text width=4cm] {Event B};",
+"\t\\node (B13) [Style3, right of=B1, xshift=6.5cm, yshift=-1.2cm, text width=4cm] {Event $\\overline{B}$};",
+"\t\\node (B31) [Style3, right of=B3, xshift=6.5cm, yshift=1.2cm, text width=4cm] {Event B};",
+"\t\\node (B33) [Style3, right of=B3, xshift=6.5cm, yshift=-1.2cm, text width=4cm] {Event $\\overline{B}$};",
+"\t\\draw[->] (B0) -- (B1.west)node[sloped,above,pos=0.5]{$\\mathrm{P}(A)=p_1$};",
+"\t\\draw[->] (B0) -- (B3.west)node[sloped,below,pos=0.5]{$\\mathrm{P}(\\overline{A})=1-p_1$};",
+"\t\\draw[->] (B1) -- (B11.west)node[sloped,above,pos=0.5]{$\\mathrm{P}(B\\mid A)=p_2$};",
+"\t\\draw[->] (B1) -- (B13.west)node[sloped,below,pos=0.5]{$\\mathrm{P}(\\overline{B}\\mid A)$};",
+"\t\\draw[->] (B3) -- (B31.west)node[sloped,above,pos=0.5]{$\\mathrm{P}(B\\mid\\overline{A})=p_3$};",
+"\t\\draw[->] (B3) -- (B33.west)node[sloped,below,pos=0.5]{$\\mathrm{P}(\\overline{B}\\mid\\overline{A})$};",
+"\\end{tikzpicture}"
+].join("\n")
+];
+
+// Khởi chạy hộp thoại
+if (box.exec() != null) {
+	var result = String(box.get("LuaChonHinhTK"));
+	var index = -1;
+	
+	// Lặp qua mảng danh sách để tìm vị trí trùng khớp
+	for (var i = 0; i < dsHinhThongKe.length; i++) {
+		if (dsHinhThongKe[i] == result) {
+			index = i;
+			break;
+		}
+	}
+	
+	// Nếu tìm thấy vị trí index
+	if (index > -1) {
+		var strTikZ = dataHinhThongKe[index];
+		editor.insertSnippet(strTikZ);
+	} else {
+		alert("Macro chưa nhận dạng được mục bạn vừa chọn!");
+	}
+}

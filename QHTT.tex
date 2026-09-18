@@ -1,0 +1,371 @@
+//---------------------------------------
+//	Tác giả macro: Dương Phước Sang
+//---------------------------------------
+var SoBPT=5;					//<<-- Thêm bớt số phương trình ở dòng này.
+//--------------------------------
+box = new UniversalInputDialog();
+box.add(false,"Hướng dẫn sử dụng","HDSD");
+box.setWindowTitle("Vẽ miền nghiệm BPT, hệ BPT");
+if (SoBPT==1) box.add("","BPT","BPT1");
+else {
+	for (var i=1;i<=SoBPT;i++){
+		box.add("","BPT ("+i+")","BPT"+i);
+	}
+}
+box.add(false,"Node đường thẳng","nodeDT");
+box.add(["////////////////","\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\","......................","*************","xxxxxxxxxxxxxx","gray!50"],"Nét xoá","netxoa");
+box.add(["none","opacity=0.9","opacity=0.8","opacity=0.7","opacity=0.6","opacity=0.5","opacity=0.4","opacity=0.3","opacity=0.2","opacity=0.1"],"Làm mờ","opac");
+box.add(-6,"xmin","xmin");
+box.add(6,"xmax","xmax");
+box.add(-6,"ymin","ymin");
+box.add(6,"ymax","ymax");
+
+function num(stri){
+	stri=stri.replace(/([ \=\t\*])/g,"");
+	if (stri[0]=="\(" && stri[stri.length-1]=="\)")
+	stri=stri.substring(1,stri.length-1);
+	if (stri=="") return 0;
+	else if (stri=="+") return 1;
+	else if (stri=="-") return -1;
+	else if (stri.indexOf("/")>-1) {
+		var stri1=Number(stri.substring(0,stri.indexOf("/")));
+		var stri2=Number(stri.substring(1+stri.indexOf("/")),stri.length);
+		return stri1/stri2;
+	}
+	else if (stri.length>2 && stri.substring(stri.length-2,stri.length)=="\^2") {
+		var stri1=Number(stri.substring(0,stri.indexOf("\^2")));
+		return stri1*stri1;
+	}
+	else if (stri.length>2 && stri.substring(stri.length-2,stri.length)=="\^3") {
+		var stri1=Number(stri.substring(0,stri.indexOf("\^3")));
+		return stri1*stri1*stri1;
+	}
+	else if (stri.indexOf("sqrt")>-1) {
+		if (stri[0]=="+") stri=stri.substring(1,stri.length);
+		if (stri.indexOf("sqrt")==0) {
+			var stri1=Number(stri.substring(4,stri.length));
+			return Math.sqrt(stri1);
+		}
+		else if (stri[0]=="-") {
+			stri=stri.substring(1,stri.length);
+			if (stri.indexOf("sqrt")==0) {
+				var stri1=Number(stri.substring(4,stri.length));
+				return -Math.sqrt(stri1);
+			}
+			else {
+				var stri1=Number(stri.substring(0,stri.indexOf("sqrt")));
+				var stri2=Number(stri.substring(4+stri.indexOf("sqrt"),stri.length));
+				return -Math.sqrt(stri1*stri1*stri2);
+			}
+		}
+		else {
+			var stri1=Number(stri.substring(0,stri.indexOf("sqrt")));
+			var stri2=Number(stri.substring(4+stri.indexOf("sqrt"),stri.length));
+			return Math.sqrt(stri1*stri1*stri2);
+		}
+		
+	}
+	else return Number(stri);
+};
+
+function fracS(num){			//######## Tạo biểu thức dạng String: 'm/n' để tính toán trong Tikz
+	for(var n=2;n<49;n++){
+		if (Math.round(1000000*num)/1000000!= Math.round(num) && Math.round(1000000*n*num)/1000000==Math.round(n*num)) {
+			return Math.round(n*num)+"/"+n;
+			break;
+		}
+		else if(n==48) return Math.round(100*num)/100;
+	}
+};
+function fracN(num){			//######## Tạo biểu thức String dạng '\frac{m}{n}' ghi cho các Node
+	for(var n=2;n<49;n++){
+		if (Math.round(1000000*num)/1000000!= Math.round(num) && Math.round(1000000*n*num)/1000000==Math.round(n*num)) {
+			return "\\frac{"+Math.round(n*num)+"}{"+n+"}";
+			break;
+		}
+		else if(n==48) return Math.round(10*num)/10;
+	}
+};
+function formatS(num){			//######## Tạo biểu thức String dạng 'sqrt n', dùng tính toán trong Tikz
+	if (num<0) var Dau="-";
+	else Dau="";
+	if (Math.round(1000000*num)/1000000==Math.round(num))
+	return Dau+Math.round(Math.abs(num));
+	else if (Math.round(1000000*num*num)/1000000==Math.round(num*num)) {
+		for(var n=40;n>1;n--){
+			if (Math.round(1000000*num*num/(n*n))/1000000== Math.round(num*num/(n*n))) {
+				return Dau+n+"*sqrt "+Math.round(num*num/(n*n));
+				break;
+			}
+			else if(n==2) return Dau+"sqrt "+Math.round(num*num);
+		}
+	}
+	else 
+	for(var n=2;n<41;n++){
+		if (Math.round(1000000*num*num*n*n)/1000000== Math.round(num*num*n*n) && Math.round(1000000*Math.sqrt(num*num*n*n))/1000000!= Math.round(Math.sqrt(num*num*n*n))) {
+			for(var m=40;m>1;m--){
+				if (Math.round(1000000*num*num*n*n/(m*m))/1000000== Math.round(num*num*n*n/(m*m))) {
+					return Dau+m+"*sqrt "+Math.round(num*num*n*n/(m*m))+"/"+n;
+					break;
+				}
+				else if(m==2) return Dau+"sqrt "+Math.round(num*num*n*n)+"/"+n;
+			}
+			break;
+		}
+		else if(n==40) return Dau+fracS(Math.abs(num));
+	}
+};
+function formatN(num){			//######## Tạo biểu thức String dạng '\sqrt{n}', ghi cho các Node
+	if (num<0) var Dau="-";
+	else Dau="";
+	if (Math.round(1000000*num)/1000000==Math.round(num))
+	return Dau+Math.round(Math.abs(num));
+	else if (Math.round(1000000*num*num)/1000000==Math.round(num*num)) {
+		for(var n=40;n>1;n--){
+			if (Math.round(1000000*num*num/(n*n))/1000000== Math.round(num*num/(n*n))) {
+				return Dau+n+"\\sqrt{"+Math.round(num*num/(n*n))+"}";
+				break;
+			}
+			else if(n==2) return Dau+"\\sqrt{"+Math.round(num*num)+"}";
+		}
+	}
+	else 
+	for(var n=2;n<41;n++){
+		if (Math.round(1000000*num*num*n*n)/1000000== Math.round(num*num*n*n) && Math.round(1000000*Math.sqrt(num*num*n*n))/1000000!= Math.round(Math.sqrt(num*num*n*n))) {
+			for(var m=40;m>1;m--){
+				if (Math.round(1000000*num*num*n*n/(m*m))/1000000== Math.round(num*num*n*n/(m*m))) {
+					return Dau+"\\frac{"+m+"\\sqrt{"+Math.round(num*num*n*n/(m*m))+"}}{"+n+"}";
+					break;
+				}
+				else if(m==2) return Dau+"\\frac{"+"\\sqrt{"+Math.round(num*num*n*n)+"}}{"+n+"}";
+			}
+			break;
+		}
+		else if(n==40) return Dau+fracN(Math.abs(num));
+	}
+};
+
+if (box.exec()!=""){
+	if (box.get("HDSD")) {
+		var msg="-------- Cách nhập bất phương trình --------\n";
+		msg=msg+"+ Mỗi 1 dòng là 1 bất phương trình được nhập theo dạng:\n";
+		msg=msg+"           ax+by\<c,   ax+by\>c,   ax+by+c\<0,   ax+by+c\>0\n";
+		msg=msg+"     (hệ số tự do đặt bên trái hay phải dấu BPT đều được)\n";
+		msg=msg+"+ Cho phép nhập dạng đặc biệt:\n";
+		msg=msg+"                 m\<ax\<M     hoặc    m\<by\<M\n";
+		msg=msg+"+ Có thể nhập dạng phân số cho các hệ số kiểu: p\/q\n";
+		msg=msg+"+ Có thể nhập dạng căn thức cho các hệ số kiểu: sqrt n\n\n";
+		msg=msg+"----------- Một số tùy chọn khác -----------\n";
+		msg=msg+"+ Có thể cho ẩn (hiện) phương trình đường thẳng\n";
+		msg=msg+"+ Có thể lựa chọn kiểu gạch bỏ miền khác nghiệm\n";
+		msg=msg+"+ Có thể lựa chọn làm mờ miền bị gạch hay không\n";
+		msg=msg+"+ Cho phép chỉnh sửa vùng chứa hệ trục tọa độ";
+		alert(msg);
+	}
+	else {
+		//================= Lưu bộ các hệ số a,b,dấu bpt và c (đặt bên phải dấu bpt) và phương trình đường thẳng ============
+		var PTDT=[""]; var PTDTtam=""; var lenPTDT=1;
+		var a=[""];	var b=[""]; var d=[""];	var c=[""];
+		var a1="";  var a2="";  var b1="";  var b2=""; var c1=""; var c2="";
+		var Signa=""; var Signb="+"; var Signc="";
+		for (var i=1;i<=SoBPT;i++) {
+			PTDTtam="\+"+box.get("BPT"+i).replace(/([ \=\t\*])/g,"");
+			PTDTtam=PTDTtam.replace(/(\+\-)/g,"-");
+			
+			if (PTDTtam.search(/([\>\<])/g)<0 || (PTDTtam.search(/(x)/g)<0 && PTDTtam.search(/(y)/g)<0)) PTDT.push("");
+			else if (PTDTtam.search(/(\<)/g)>-1 && PTDTtam.substring(1+PTDTtam.indexOf("\<"),PTDTtam.length).search(/(\<)/g)>-1) {
+				PTDTtam=PTDTtam.replace(/(\<)/g,"\<\+");
+				PTDTtam=PTDTtam.replace(/(\+\-)/g,"-");
+				PTDTtam=PTDTtam.replace(/(\+0)/g,"0");
+				var Ve1=PTDTtam.substring(0,PTDTtam.indexOf("\<"));
+				var Ve23=PTDTtam.substring(1+PTDTtam.indexOf("\<"),PTDTtam.length);
+				var Ve2=Ve23.substring(0,Ve23.indexOf("\<"));
+				var Ve3=Ve23.substring(1+Ve23.indexOf("\<"),Ve23.length);
+				if ((Ve2.indexOf("x")>-1 && Ve2.indexOf("y")<0)||(Ve2.indexOf("x")<0 && Ve2.indexOf("y")>-1)){
+					if (Ve2.indexOf("x")>-1) {
+						a.push(num(Ve2.substring(0,Ve2.indexOf("x"))));
+						a.push(num(Ve2.substring(0,Ve2.indexOf("x"))));
+						b.push(0);b.push(0);
+					}
+					else if (Ve2.indexOf("y")>-1){
+						a.push(0);a.push(0);
+						b.push(num(Ve2.substring(0,Ve2.indexOf("y"))));
+						b.push(num(Ve2.substring(0,Ve2.indexOf("y"))));
+					}
+					c.push(num(Ve1));
+					d.push(1);
+					c.push(num(Ve3));
+					d.push(-1);
+					Ve1=Ve1.replace(/([0-9]{1,})(\/)([0-9]{1,})/g,"\\frac{$1}{$3}");
+					Ve1=Ve1.replace(/(sqrt)([0-9]{1,})/g,"\\$1{$2}");
+					if (Ve2[0]=="\+") Ve2=Ve2.substring(1,Ve2.lenght);
+					if (Ve3[0]=="\+") Ve3=Ve3.substring(1,Ve2.lenght);
+					Ve2=Ve2.replace(/([0-9]{1,})(\/)([0-9]{1,})/g,"\\frac{$1}{$3}");
+					Ve2=Ve2.replace(/(sqrt)([0-9]{1,})/g,"\\$1{$2}");
+					Ve3=Ve3.replace(/([0-9]{1,})(\/)([0-9]{1,})/g,"\\frac{$1}{$3}");
+					Ve3=Ve3.replace(/(sqrt)([0-9]{1,})/g,"\\$1{$2}");
+					PTDT.push(Ve2+"\="+Ve1);
+					PTDT.push(Ve2+"\="+Ve3);
+				}
+			}
+			else {
+				if (PTDTtam.search(/([\>])/g)>-1) d.push(1);
+				else d.push(-1);
+				PTDTtam=PTDTtam.replace(/([\<\>])/g,"=");
+				
+				if (PTDTtam.indexOf("x")>-1) {
+					a.push(num(PTDTtam.substring(0,PTDTtam.indexOf("x"))));
+					if (PTDTtam.indexOf("y")>-1) {
+						b.push(num(PTDTtam.substring(1+PTDTtam.indexOf("x"),PTDTtam.indexOf("y"))));
+						c.push(num(PTDTtam.substring(1+PTDTtam.search(/(\=)/g),PTDTtam.lenght))-num(PTDTtam.substring(1+PTDTtam.indexOf("y"),PTDTtam.search(/(\=)/g))));
+					}
+					else {
+						b.push(0);
+						c.push(num(PTDTtam.substring(1+PTDTtam.search(/(\=)/g),PTDTtam.lenght))-num(PTDTtam.substring(1+PTDTtam.indexOf("x"),PTDTtam.search(/(\=)/g))));
+					}
+				}
+				else {
+					a.push(0);
+					b.push(num(PTDTtam.substring(0,PTDTtam.indexOf("y"))));
+					c.push(num(PTDTtam.substring(1+PTDTtam.search(/(\=)/g),PTDTtam.lenght))-num(PTDTtam.substring(1+PTDTtam.indexOf("y"),PTDTtam.search(/(\=)/g))));
+				}
+				if (PTDTtam[0]=="\+") PTDTtam=PTDTtam.substring(1,PTDTtam.lenght);
+				PTDTtam=PTDTtam.replace(/([0-9]{1,})(\/)([0-9]{1,})/g,"\\frac{$1}{$3}");
+				PTDTtam=PTDTtam.replace(/(sqrt)([0-9]{1,})/g,"\\$1{$2}");
+				PTDT.push(PTDTtam);
+			}
+		}
+		//============= Xây dựng lệnh xoá miền không chứa nghiệm ===========
+		var str=""; 
+		if (box.get("opac")=="none") {var opacity="";}
+		else {var opacity=","+box.get("opac");}
+		var xm=box.get("xmin");	var xM=box.get("xmax");
+		var ym=box.get("ymin");	var yM=box.get("ymax");
+		var strDraw=""; var strPoint="";
+		
+		if (box.get("netxoa")=="////////////////"){var netxoa="north east lines";}
+		else if (box.get("netxoa")=="\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"){var netxoa="north west lines";}
+		else if (box.get("netxoa")=="......................"){var netxoa="crosshatch dots";}
+		else if (box.get("netxoa")=="*************"){var netxoa="fivepointed stars";}
+		else if (box.get("netxoa")=="xxxxxxxxxxxxxx"){var netxoa="crosshatch";}
+		
+		if (PTDT.join("")!=""){
+			str=str+"\\begin{tikzpicture}[scale=1,thick,font=\\small,>=stealth]\n";
+			str=str+"\\tikzset{every node/.style={inner sep=1pt, rounded corners=2pt,fill=white}}\n";
+			str=str+"\\draw[color=gray!40,dashed,very thin] ("+xm+","+ym+") grid ("+xM+","+yM+");\n";
+			str=str+"\\begin{scope}";
+			if (box.get("netxoa")=="gray!50") str=str+"[gray!50"+opacity+"]";
+			else str=str+"[pattern="+netxoa+opacity+"]";
+			
+			for (var i=1; i<PTDT.length;i++) {
+				//-----------Nhận dạng có node cho đường thẳng không ---------------
+				var NodePTBelow=""; var NodePTAbove="";
+				if (box.get("nodeDT")==true && (a[i]*a[i]+c[i]*c[i])>0 && (b[i]*b[i]+c[i]*c[i])>0) {
+					NodePTBelow=" node[pos=%<0.7%>,below,sloped]{$"+PTDT[i]+"$}";
+					NodePTAbove=" node[pos=%<0.7%>,above,sloped]{$"+PTDT[i]+"$}";
+				}
+				if (a[i]!=0 && b[i]==0){
+					if (a[i]*d[i]<0){
+						if (c[i]/a[i]>=xm && c[i]/a[i]<xM) {
+							str=str+"\n\\fill ("+formatS(c[i]/a[i])+","+ym+") rectangle ("+xM+","+yM+");";
+							strDraw=strDraw+"\n("+formatS(c[i]/a[i])+","+ym+")--("+formatS(c[i]/a[i])+","+yM+")"+NodePTBelow;
+							if(c[i]!=0)
+							strPoint=strPoint+"\n("+formatS(c[i]/a[i])+",0) circle(1.3pt) +(-45:0.3) node{$"+formatN(c[i]/a[i])+"$}";
+						}
+						else if (c[i]/a[i]<xm)
+						str=str+"\n\\fill ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+					}
+					else {
+						if (c[i]/a[i]>xm && c[i]/a[i]<=xM) {
+							str=str+"\n\\fill ("+xm+","+ym+") rectangle ("+formatS(c[i]/a[i])+","+yM+");";
+							strDraw=strDraw+"\n("+formatS(c[i]/a[i])+","+ym+")--("+formatS(c[i]/a[i])+","+yM+")"+NodePTAbove;
+							if(c[i]!=0)
+							strPoint=strPoint+"\n("+formatS(c[i]/a[i])+",0) circle(1.3pt) +(-140:0.3) node{$"+formatN(c[i]/a[i])+"$}";
+						}
+						else if (c[i]/a[i]>xM)
+						str=str+"\n\\fill ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+					}
+				}
+				else if (a[i]==0 && b[i]!=0){
+					if (b[i]*d[i]<0){
+						if (c[i]/b[i]>=ym && c[i]/b[i]<yM) {
+							str=str+"\n\\fill ("+xm+","+formatS(c[i]/b[i])+") rectangle ("+xM+","+yM+");";
+							strDraw=strDraw+"\n("+xm+","+formatS(c[i]/b[i])+")--("+xM+","+formatS(c[i]/b[i])+")"+NodePTAbove;
+							if(c[i]!=0)
+							strPoint=strPoint+"\n(0,"+formatS(c[i]/b[i])+") circle(1.3pt) +(45:0.3) node{$"+formatN(c[i]/b[i])+"$}";
+						}
+						else if (c[i]/b[i]<ym)
+						str=str+"\n\\fill ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+					}
+					else {
+						if (c[i]/b[i]>ym && c[i]/b[i]<=yM) {
+							str=str+"\n\\fill ("+xm+","+ym+") rectangle ("+xM+","+formatS(c[i]/b[i])+");";
+							strDraw=strDraw+"\n("+xm+","+formatS(c[i]/b[i])+")--("+xM+","+formatS(c[i]/b[i])+")"+NodePTBelow;
+							if(c[i]!=0)
+							strPoint=strPoint+"\n(0,"+formatS(c[i]/b[i])+") circle(1.3pt) +(-45:0.3) node{$"+formatN(c[i]/b[i])+"$}";
+						}
+						else if (c[i]/b[i]>yM)
+						str=str+"\n\\fill ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+					}
+				}
+				else {
+					//--- xác định điểm nút miền xoá
+					var yL=c[i]/b[i]-a[i]*xm/b[i];
+					var yR=c[i]/b[i]-a[i]*xM/b[i];
+					var xB=c[i]/a[i]-b[i]*ym/a[i];
+					var xT=c[i]/a[i]-b[i]*yM/a[i];
+					var Ml=""; var Mr="";
+					if (yL>=ym && yL<=yM) Ml="("+xm+","+formatS(yL)+")";
+					else if (yL<ym && a[i]*b[i]<0 && xB<xM) Ml="("+formatS(xB)+","+ym+")";
+					else if (yL>yM && a[i]*b[i]>0 && xT<xM) Ml="("+formatS(xT)+","+yM+")";
+					if (yR>=ym && yR<=yM) Mr="("+xM+","+formatS(yR)+")";
+					else if (yR>yM && a[i]*b[i]<0 && xT>xm) Mr="("+formatS(xT)+","+yM+")";
+					else if (yR<ym && a[i]*b[i]>0 && xB>xm) Mr="("+formatS(xB)+","+ym+")";
+					//--- xác định giao với trục toạ độ
+					var A0=""; var B0="";
+					if (c[i]/a[i]>xm && c[i]/a[i]<xM) A0="("+formatS(c[i]/a[i])+",0)";
+					if (c[i]/b[i]>ym && c[i]/b[i]<yM) B0="(0,"+formatS(c[i]/b[i])+")";
+					if (Ml !="" && Mr !="") {
+						if (A0 !="" && strPoint.indexOf(A0)<0) {
+							if (a[i]*b[i]<0) strPoint=strPoint+"\n"+A0+" circle(1.3pt) +(-45:0.3) node{$"+formatN(c[i]/a[i])+"$}";
+							else strPoint=strPoint+"\n"+A0+" circle(1.3pt) +(45:0.3) node{$"+formatN(c[i]/a[i])+"$}";
+						}
+						if (B0 !="" && strPoint.indexOf(B0)<0) {
+							if (a[i]*b[i]<0) strPoint=strPoint+"\n"+B0+" circle(1.3pt) +(-45:0.3) node{$"+formatN(c[i]/b[i])+"$}";
+							else strPoint=strPoint+"\n"+B0+" circle(1.3pt) +(45:0.3) node{$"+formatN(c[i]/b[i])+"$}";
+						}
+						str=str+"\n\\fill "+Ml;
+						var L1=(a[i]*xm+b[i]*ym-c[i])*d[i]; var M1="("+xm+","+ym+")";
+						var L2=(a[i]*xm+b[i]*yM-c[i])*d[i]; var M2="("+xm+","+yM+")";
+						var L3=(a[i]*xM+b[i]*yM-c[i])*d[i]; var M3="("+xM+","+yM+")";
+						var L4=(a[i]*xM+b[i]*ym-c[i])*d[i]; var M4="("+xM+","+ym+")";
+						if (b[i]*d[i]<0) {
+							if (L1<0) str=str+"--"+M1;
+							if (L2<0) str=str+"--"+M2;
+							if (L3<0) str=str+"--"+M3;
+							if (L4<0) str=str+"--"+M4;
+							strDraw=strDraw+"\n"+Ml+"--"+Mr+NodePTAbove;
+						}
+						else {
+							if (L2<0) str=str+"--"+M2;
+							if (L1<0) str=str+"--"+M1;
+							if (L4<0) str=str+"--"+M4;
+							if (L3<0) str=str+"--"+M3;
+							strDraw=strDraw+"\n"+Ml+"--"+Mr+NodePTBelow;
+						}
+						str=str+"--"+Mr+";";
+					}
+				}
+			}
+			str=str+"\n\\end{scope}";
+			if (strPoint!="") str=str+"\n\\fill"+strPoint;
+			str=str+";\n\\draw"+strDraw+";";
+			
+			str=str+"\n\\fill\n (0,0)circle(1pt) node[below left=1pt]{$O$};";
+			str=str+"\n\\draw[->] ("+xm+",0)--("+xM+",0) node[below=2pt]{$x$};";
+			str=str+"\n\\draw[->] (0,"+ym+")--(0,"+yM+") node[left=2pt]{$y$};";
+			str=str+"\n\\end{tikzpicture}";
+			editor.insertSnippet(str);
+		}
+	}
+}

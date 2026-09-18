@@ -1,0 +1,500 @@
+//---------------------------------------
+// Tác giả macro: NGUYỄN THANH PHONG
+// Chức năng: Vẽ 20 loại hình học không gian bằng TikZ
+//---------------------------------------
+var box = new UniversalInputDialog();
+box.setWindowTitle("Vẽ Hình Học Không Gian (TikZ)");
+
+// Danh sách các hình để đưa vào ComboBox (Đã xoá chóp cụt 2, giữ nón cụt)
+var dsHinh = [
+"1. Tứ diện ABCD",
+"2. Hình chóp tam giác có cạnh bên vuông góc với đáy",
+"3. Hình chóp đều đáy tam giác",
+"4. Hình chóp tam giác có mặt bên vuông góc đáy",
+"5. Hình chóp có đáy là tứ giác",
+"6. Hình chóp có đáy là hình bình hành",
+"7. Hình chóp tứ giác cạnh bên vuông góc đáy",
+"8. Hình chóp tứ giác đều",
+"9. Hình chóp tứ giác có mặt bên vuông góc đáy",
+"10. Hình chóp có đáy là hình thang vuông",
+"11. Hình chóp cụt",
+"12. Hình hộp chữ nhật",
+"13. Hình lập phương",
+"14. Lăng trụ xuyên đáy tứ giác",
+"15. Lăng trụ tam giác",
+"16. Lăng trụ xuyên đáy tam giác",
+"17. Hình nón",
+"18. Hình trụ",
+"19. Hình cầu",
+"20. Hình nón cụt"
+];
+
+box.add(dsHinh, "Chọn hình cần chèn:", "LuaChonHinh");
+
+// Lưu trữ toàn bộ 20 đoạn code TikZ vào mảng
+var dataTikZ = [
+// 1
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\path         (0:0) coordinate (B)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-120:\\a/2) coordinate (C)",
+"\t\t\t($(B)+(70:\\a)$) coordinate (A);",
+"\t\\draw[dashed,thick]         (B)--(D);",
+"\t\\draw[thick]                         (B)--(A)--(D) (A)--(C)",
+"\t\t\t\t\t(B)--(C)--(D);",
+"\t\\foreach \\x/\\g in {A/90,B/180,C/-45,D/0}",
+"\t\t\t\\fill[black]         (\\x) circle (1pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};",
+"\t%Hình chóp S.ABC có SA vuông góc đáy        ",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 2
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4} %Khai báo cạnh",
+"\t\\def\\h{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (B)",
+"\t\t\t++(-150:4*\\a/5) coordinate (C)",
+"\t\t\t($(A)+(90:\\h)$) coordinate (S)",
+"\t\t\t($(A)!0.5!(B)$) coordinate (M);",
+"\t\\draw[thick] \t(A)--(C)--(B)",
+"\t\t(A)--(S)\t(B)--(S)\t(C)--(S);",
+"\t\\draw[dashed,thick] \t(A)--(B);",
+"\t\\foreach \\x /\\goc in {A/180,B/0,C/-135,S/90}",
+"\t\t\t\\fill[black] (\\x) circle (1.5pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=2mm]{right angle=B--A--S};%Theo chiều dương",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 3
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{5}",
+"\t\\def\\h{5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (B)",
+"\t\t\t++(-150:4*\\a/5) coordinate (C)",
+"\t\t\t($(A)!0.5!(B)$) coordinate (M)",
+"\t\t\t($(C)!2/3!(M)$) coordinate (H)",
+"\t\t\t($(H)+(90:\\h)$) coordinate (S);",
+"\t\\draw[thick] (C)--(A) (C)--(B)",
+"\t\t(A)--(S)\t(B)--(S)\t(C)--(S);",
+"\t\\draw[dashed,thick] (A)--(B) (S)--(H) \t(C)--(M);",
+"\t\\foreach \\x / \\goc in {A/180,B/0,C/-135,H/0,M/45,S/90}",
+"\t\t\t\\fill (\\x) circle (1.5pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 4
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\def\\h{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (B)",
+"\t\t\t++(-150:4*\\a/5) coordinate (C)",
+"\t\t\t($(A)!2/3!(B)$) coordinate (H)",
+"\t\t\t($(H)+(90:\\h)$) coordinate (S);",
+"\t\\draw[thick] (C)--(A) (C)--(B)",
+"\t\t\t(A)--(S)\t(B)--(S)\t(C)--(S);",
+"\t\\draw[dashed,thick] (A)--(B) (S)--(H) ;",
+"\t\\foreach \\x / \\goc in \t\t{A/180,B/0,C/-135,H/45,S/90}",
+"\t\t\t\\fill (\\x) circle (1.5pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=2mm]{right angle=A--H--S};%Theo chiều dương",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 5
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t++(-165:2*\\a/3) coordinate (B)",
+"\t\t\t($(A)+(70:\\a)$) coordinate (S)",
+"\t\t\t(intersection of A--C and B--D) coordinate (O);%giao điểm O",
+"\t\\draw[dashed,thick] \t(A)--(D);",
+"\t\\draw[thick] \t\t\t(A)--(B)--(C)--(D)",
+"\t(A)--(S)\t(B)--(S)\t(C)--(S)\t(D)--(S);",
+"\t\\foreach \\x/\\g in {A/180,B/-135,C/-45,D/0,S/90}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 6
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)",
+"\t\t\t($(A)+(80:\\a)$) coordinate (S)",
+"\t(intersection of A--C and B--D) coordinate (O);%giao điểm O",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(S);",
+"\t\\draw[thick] \t\t\t(B)-- (C)--(D)",
+"\t\t\t\t\t(B)--(S)\t(C)--(S)\t(D)--(S);",
+"\t\\foreach \\x/\\g in {A/135,B/-135,C/-45,D/45,S/90}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 7
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\def\\h{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)",
+"\t\t\t($(A)+(90:\\h)$) coordinate (S)",
+"\t\t\t(intersection of A--C and B--D) coordinate (O);%giao điểm O",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(S);",
+"\t\\draw[thick] \t\t\t(B)-- (C)--(D)",
+"\t\t\t(B)--(S)\t(C)--(S)\t(D)--(S);",
+"\t\\foreach \\x/\\g in {A/135,B/-135,C/-45,D/45,S/90}",
+"\t\t\t\\fill[black] \t(\\x) circle (1.5pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=3mm]{right angle=D--A--S};%Theo chiều dương",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 8
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\def\\h{4.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)",
+"\t\t\t(intersection of A--C and B--D) coordinate (O)",
+"\t\t\t($(O)+(90:\\h)$) coordinate (S);",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(S)",
+"\t\t\t(A)--(C)\t(B)--(D)\t(S)--(O)\t;",
+"\t\\draw[thick] \t\t\t(B)--(C)--(D)",
+"\t\t\t(B)--(S)\t(C)--(S)\t(D)--(S);",
+"\t\\foreach \\x/\\g in {A/135,B/-135,C/-45,D/45,S/90,O/-90}",
+"\t\t\t\\fill[black] \t(\\x) circle (1.5pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=3mm]{right angle=D--O--S};%Theo chiều dương",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 9
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\def\\h{4.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)",
+"\t\t\t($(A)!0.5!(B)$) coordinate (H)",
+"\t\t\t($(H)+(90:\\h)$) coordinate (S)",
+"\t\t\t(intersection of A--C and B--D) coordinate (O);%giao điểm O",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(S)",
+"\t(S)--(H)\t;",
+"\t\\draw[thick] \t\t\t(B)--(C)--(D)",
+"\t\t\t(B)--(S)\t(C)--(S)\t(D)--(S);",
+"\t\\foreach \\x/\\g in {A/135,B/-135,C/-45,D/45,S/90,H/135}",
+"\t\t\t\\fill[black] \t(\\x) circle (1.5pt)",
+"\t\t\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 10
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{5}",
+"\t\\def\\h{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (B)",
+"\t\t\t($(A)+(-130:\\a/2)$) coordinate (D)",
+"\t\t\t($(B)+(D)-(A)$) coordinate (Ct)",
+"\t\t\t($(D)!1/2!(Ct)$) coordinate (C)",
+"\t\t\t($(A)+(90:\\h)$) coordinate (S)",
+"\t\t(intersection of A--C and B--D) coordinate (O);%giao điểm O",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(S);",
+"\t\\draw[thick] \t\t\t(B)--(C)--(D)",
+"\t\t\t\t(B)--(S)\t(C)--(S)\t(D)--(S);",
+"\t\\foreach \\x/\\g in {A/135,B/45,C/-45,D/-135,S/90}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=2mm]{right angle=B--A--S};%Theo chiều dương",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 11
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{5}",
+"\t\\def\\h{5}",
+"\t\\def\\tiso{0.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (B)",
+"\t\t\t($(A)+(-130:\\a/2)$) coordinate (D)",
+"\t\t\t($(B)+(D)-(A)$) coordinate (Ct)",
+"\t\t\t($(D)!1/2!(Ct)$) coordinate (C)",
+"\t\t\t($(A)!0.5!(C)$) coordinate (H)",
+"\t\t\t($(H)+(90:\\h)$) coordinate (S)",
+"\t\\foreach \\x in {A,B,C,D}{($(\\x)!\\tiso!(S)$) coordinate (\\x_1)};",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(A_1) ;",
+"\t\\draw[thick]  (B)--(C)--(D) ",
+"\t\t\t(D_1)--(C_1)--(B_1)--(A_1)--cycle",
+"\t\t\t(B)--(B_1)\t(C)--(C_1)\t(D)--(D_1) ;",
+"\t\\foreach \\x/\\g in {A/135,B/45,C/-45,D/-135,A_1/135,B_1/45,C_1/-35,D_1/180}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 12
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{3}",
+"\t\\def\\b{2}",
+"\t\\def\\h{3.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\b) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)",
+"\t\t\t($(A)+(90:\\h)$) coordinate (A')",
+"\t\t\t($(B)+(90:\\h)$) coordinate (B')",
+"\t\t\t($(C)+(90:\\h)$) coordinate (C')",
+"\t\t\t($(D)+(90:\\h)$) coordinate (D');",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(A');",
+"\t\\draw[thick] \t(C)--(C') \t(D)--(D') \t(B)--(B')\t(C)--(C')",
+"\t\t\t(B)--(C)--(D) ",
+"\t\t\t(A')--(B')--(C')--(D')--cycle;",
+"\t\\foreach \\x/\\g in {A/180,B/180,C/0,D/0,A'/180,B'/180,C'/0,D'/0}",
+"\t\\fill[black] \t(\\x) circle (1pt)",
+"\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 13
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{3.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)",
+"\t\t\t($(A)+(90:\\a)$) coordinate (A')",
+"\t\t\t($(B)+(90:\\a)$) coordinate (B')",
+"\t\t\t($(C)+(90:\\a)$) coordinate (C')",
+"\t\t\t($(D)+(90:\\a)$) coordinate (D');",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(A');",
+"\t\\draw[thick] \t(C)--(C') \t(D)--(D') \t(B)--(B') \t(B)--(C)--(D) (A')--(B')--(C')--(D')--cycle;",
+"\t\\foreach \\x/\\g in {A/180,B/180,C/0,D/0,A'/180,B'/180,C'/0,D'/0}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 14
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{3.5}",
+"\t\\def\\h{4}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (D)",
+"\t\t\t++(-130:\\a/2) coordinate (C)",
+"\t\t\t($(A)+(C)-(D)$) coordinate (B)\t",
+"\t\t\t($(A)!0.25!(C)$) coordinate (H)",
+"\t\t\t($(H)+(90:\\h)$) coordinate (A')",
+"\t\t\t($(A')+(C)-(A)$) coordinate (C')",
+"\t\t\t($(C')+(B)-(C)$) coordinate (B')",
+"\t\t\t($(A')+(D)-(A)$) coordinate (D');",
+"\t\\draw[dashed,thick] \t(B)--(A)--(D)\t(A)--(A') (A')--(H) (A)--(C);",
+"\t\\draw[thick] \t(C)--(C') \t(D)--(D') \t(B)--(B')  (B)--(C)--(D) (A')--(B')--(C')--(D')--cycle;",
+"\t\\foreach \\x/\\g in {A/180,B/180,C/0,D/0,A'/180,B'/180,C'/0,D'/0,H/-135}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=2mm]{right angle=A'--H--C};%Theo chiều dương\t\t",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 15
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\def\\h{4.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (C)",
+"\t\t\t++(-150:3*\\a/4) coordinate (B)",
+"\t\t\t($(A)+(90:\\h)$) coordinate (A')",
+"\t\t\t($(B)+(90:\\h)$) coordinate (B')",
+"\t\t\t($(C)+(90:\\h)$) coordinate (C');",
+"\t\\draw[dashed,thick] \t(A)--(C);",
+"\t\\draw[thick]\t(C)--(C') \t(B)--(B')\t(A)--(A') (A)--(B)--(C) (A')--(B')--(C')--cycle;",
+"\t\\foreach \\x/\\g in {A/180,B/-45,C/0,A'/180,B'/-45,C'/0}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 16
+[
+"\\begin{tikzpicture}",
+"\t\\def\\a{4}",
+"\t\\def\\h{4.5}",
+"\t\\path \t(0:0) coordinate (A)",
+"\t\t\t++(0:\\a) coordinate (C)",
+"\t\t\t++(-135:\\a/2) coordinate (B)",
+"\t\t\t($(B)!0.5!(C)$) coordinate (M)",
+"\t\t\t($(A)!2/3!(M)$) coordinate (G)\t\t\t",
+"\t\t\t($(G)+(90:\\h)$) coordinate (A')",
+"\t\t\t($(A')+(C)-(A)$) coordinate (C')",
+"\t\t\t($(C')+(B)-(C)$) coordinate (B'); ",
+"\t\\draw[dashed,thick] (A)--(C) (A')--(G);",
+"\t\\draw[thick] (C)--(C') \t(B)--(B') \t(A)--(A') ",
+"\t\t\t\t(A)--(B)--(C) (A')--(B')--(C')--cycle;",
+"\t\\foreach \\x/\\g in {A/180,B/-45,C/0,A'/180,B'/-45,C'/0,G/-45}",
+"\t\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\t\\draw pic[draw,angle radius=2mm]{right angle=A'--G--C};%Theo chiều dương\t",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 17
+[
+"\\begin{tikzpicture}\t",
+"\t\\def\\a{3} ",
+"\t\\def\\b{1}",
+"\t\\def\\h{5}",
+"\t\\pgfmathsetmacro\\g{asin(\\b/\\h)}",
+"\t\\pgfmathsetmacro\\xo{\\a *cos(\\g)}",
+"\t\\pgfmathsetmacro\\yo{\\b *sin(\\g)}",
+"\t\\draw[dashed] (\\xo,\\yo)  arc (\\g:180-\\g:{3} and {1});",
+"\t\\draw \t\t  (\\xo,\\yo) arc (360+\\g:180-\\g:{3} and {1});",
+"\t\\draw (\\xo,\\yo)--(90:\\h) node[above]{$S$}",
+"\t--(-\\xo,\\yo);",
+"\t\\draw[dashed] (180:\\a)--(0:0)node[below]{0} --(0:\\a);",
+"\t\\draw[dashed] (90:\\h)--(90:\\h/2)node[left]{$h$}--(0:0);",
+"\t\\fill (180:\\a) node[below left]{$A$}circle(1pt);",
+"\t\\fill  (0:\\a) node[below right] {$B$} circle(1pt);",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 18
+[
+"\\begin{tikzpicture}",
+"\t\\def\\h{3}",
+"\t\\def\\a{2}",
+"\t\\def\\b{1}",
+"\t\\def\\gA{30}",
+"\t\\def\\gB{-80}\t",
+"\t\\path \t(180:\\a) arc (180:\\gA:{\\a} and {\\b}) coordinate (A)",
+"\t(180:\\a) arc (180:\\gB:{\\a} and {\\b}) coordinate (B)",
+"\t(0:0) coordinate (O)",
+"\t\\foreach \\x in {A,B,O}{($(\\x)+(90:\\h)$) coordinate (\\x_1)};",
+"\t\\fill[gray!50] (A)--(B)--(B_1)--(A_1)--cycle;",
+"\t\\draw[dashed] (180:\\a) arc(180:0:{\\a} and {\\b});",
+"\t\\draw (180:\\a) arc(180:360:{\\a} and {\\b});",
+"\t\\draw ($(180:\\a)+(90:\\h)$) arc (180:0:{\\a} and {\\b});",
+"\t\\draw ($(180:\\a)+(90:\\h)$) arc (180:360:{\\a} and {\\b});",
+"\t\\draw (180:\\a)--($(180:\\a)+(90:\\h)$) (0:\\a)--($(0:\\a)+(90:\\h)$);",
+"\t\\draw[dashed] (O)--(O_1) (A)--(A_1) (A)--(B);",
+"\t\\draw (B)--(B_1) (B_1)--(A_1);",
+"\t\\foreach \\x/\\g in {A/-90,B/-135,A_1/45,B_1/90,O/-135,O_1/135}",
+"\t\\fill[black] \t(\\x) circle (1pt)",
+"\t($(\\g:4mm)+(\\x)$) node {$\\x$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 19
+[
+"\\begin{tikzpicture}",
+"\t\\def\\r{3}",
+"\t\\draw[dashed] ",
+"\t(180:\\r) arc (180:0:{\\r} and {0.3*\\r})",
+"\t(90:\\r)  arc (90:-90:{0.3*\\r} and {\\r});",
+"\t\\draw \t",
+"\t(180:\\r) arc (180:360:{\\r} and {0.3*\\r})",
+"\t(90:\\r)  arc (90:360-90:{0.3*\\r} and {\\r});",
+"\t\\draw ",
+"\t(0:0) circle(\\r);",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 20. Hình nón cụt
+[
+"\\begin{tikzpicture}[>=stealth, line join=round, line cap=round]",
+"\t\\def\\rOne{4} % Bán kính đáy dưới (r1)",
+"\t\\def\\rTwo{2} % Bán kính đáy trên (r2)",
+"\t\\def\\h{4.5} % Chiều cao nón cụt (h)",
+"\t\\def\\k{0.3} % Hệ số ép dẹt phối cảnh (k = b/a)",
+"\t\\pgfmathsetmacro{\\aOne}{\\rOne}",
+"\t\\pgfmathsetmacro{\\bOne}{\\k * \\aOne}",
+"\t\\pgfmathsetmacro{\\aTwo}{\\rTwo}",
+"\t\\pgfmathsetmacro{\\bTwo}{\\k * \\aTwo}",
+"\t\\pgfmathsetmacro{\\H}{\\h * \\rOne / (\\rOne - \\rTwo)}",
+"\t\\pgfmathsetmacro{\\sinT}{\\bOne / \\H}",
+"\t\\pgfmathsetmacro{\\tAngle}{asin (\\sinT)}",
+"\t\\pgfmathsetmacro{\\TxOneR}{\\aOne * cos (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TyOneR}{\\bOne * sin (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TxOneL}{-\\aOne * cos (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TyOneL}{\\bOne * sin (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TxTwoR}{\\aTwo * cos (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TyTwoR}{\\h + \\bTwo * sin (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TxTwoL}{-\\aTwo * cos (\\tAngle)}",
+"\t\\pgfmathsetmacro{\\TyTwoL}{\\h + \\bTwo * sin (\\tAngle)}",
+"\t\\fill[teal!15, opacity=0.8]",
+"\t\t(\\TxTwoR, \\TyTwoR) -- (\\TxOneR, \\TyOneR)",
+"\t\tarc (\\tAngle:{-180-\\tAngle}:{\\aOne} and {\\bOne})",
+"\t\t-- (\\TxTwoL, \\TyTwoL)",
+"\t\tarc ({-180-\\tAngle}:\\tAngle:{\\aTwo} and {\\bTwo}) -- cycle;",
+"\t\\draw[dashed, thick, teal!80!black] (\\TxOneR, \\TyOneR) arc (\\tAngle:{180-\\tAngle}:{\\aOne} and {\\bOne});",
+"\t\\draw[thick, teal!80!black] (\\TxOneL, \\TyOneL) arc ({180-\\tAngle}:{360+\\tAngle}:{\\aOne} and {\\bOne});",
+"\t\\draw[thick, teal!80!black, fill=teal!5] (0, \\h) ellipse ({\\aTwo} and {\\bTwo});",
+"\t\\draw[thick, teal!80!black] (\\TxOneR, \\TyOneR) -- (\\TxTwoR, \\TyTwoR);",
+"\t\\draw[thick, teal!80!black] (\\TxOneL, \\TyOneL) -- (\\TxTwoL, \\TyTwoL);",
+"\t\\fill (0,0) circle (1pt) node[below] {$O_1$};",
+"\t\\fill (0,\\h) circle (1pt) node[above left] {$O_2$};",
+"\t\\draw[dashed, thin, gray] (0,0) -- (\\aOne, 0) node[midway, below] {$r_1$};",
+"\t\\draw[dashed, thin, gray] (0,\\h) -- (\\aTwo, \\h) node[midway, below] {$r_2$};",
+"\t\\draw[dashed, thin, gray] (0,0) -- (0,\\h) node[midway, right] {$h$};",
+"\t\\fill[red] (\\TxOneR, \\TyOneR) circle (1pt) node[right, font=\\scriptsize] {$T_{1R}$};",
+"\t\\fill[red] (\\TxTwoR, \\TyTwoR) circle (1pt) node[right, font=\\scriptsize] {$T_{2R}$};",
+"\\end{tikzpicture}"
+].join("\n")
+];
+
+// Khởi chạy hộp thoại
+if (box.exec() != null) {
+	var result = box.get("LuaChonHinh");
+	var index = -1;
+	
+	// Ép kiểu result thành chuỗi chuẩn JS
+	var strResult = String(result);
+	
+	// Lặp qua mảng danh sách để tìm vị trí trùng khớp
+	for (var i = 0; i < dsHinh.length; i++) {
+		if (dsHinh[i] == strResult) {
+			index = i;
+			break;
+		}
+	}
+	
+	// Nếu tìm thấy vị trí index
+	if (index > -1) {
+		var strTikZ = dataTikZ[index];
+		editor.insertSnippet(strTikZ);
+	} else {
+		// Thông báo lỗi nếu vẫn không khớp được (để dễ dò lỗi)
+		alert("Macro chưa nhận dạng được mục bạn vừa chọn!");
+	}
+}

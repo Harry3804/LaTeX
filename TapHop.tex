@@ -1,0 +1,197 @@
+//---------------------------------------
+// Tác giả macro: NGUYỄN THANH PHONG
+// Chức năng: Vẽ Tập hợp (Biểu đồ Ven) và Trục số
+// LƯU Ý: Các lệnh \IntervalLR, \IntervalGRF cần có bộ định nghĩa macro riêng trong file preamble của bạn.
+//---------------------------------------
+var box = new UniversalInputDialog();
+box.setWindowTitle("Vẽ Tập Hợp & Trục Số");
+
+// Danh sách hiển thị trong ComboBox
+var dsTapHop = [
+"1. Biểu đồ Ven: Hợp (A U B)",
+"2. Biểu đồ Ven: Giao (A ∩ B)",
+"3. Biểu đồ Ven: Hiệu (A \\ B)",
+"4. Biểu đồ Ven: Phần bù",
+"5. Trục số: Khoảng (a;b)",
+"6. Trục số: Đoạn [a;b]",
+"7. Trục số: Nửa khoảng [a;+∞)",
+"8. Trục số: Nửa khoảng (-∞;b]",
+"9. Trục số: Nửa khoảng [a;b)",
+"10. Trục số: Nửa khoảng (a;b]",
+"11. Trục số: Minh hoạ giao 2 tập hợp"
+];
+
+box.add(dsTapHop, "Chọn hình cần chèn:", "LuaChonTapHop");
+
+// Mảng chứa code TikZ tương ứng
+var dataTapHop = [
+// 1. Hợp của hai tập hợp
+[
+"\\begin{tikzpicture}[smooth,font=\\footnotesize,scale=0.8]",
+"\t\\draw[pattern=north east lines,pattern color=orange]",
+"\t(0,0) to[bend left=90] (2,2) to[bend left=90] (0,0)",
+"\t(1,0) to[bend left=90] (3,2) to[bend left=90] (1,0)",
+"\t(1,-0.7) node{Biểu đồ Ven minh họa $A \\cup B$}",
+"\t(0.5,1) node{$A$}",
+"\t(2.6,0.9) node{$B$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 2. Giao của hai tập hợp
+[
+"\\begin{tikzpicture}[smooth,font=\\footnotesize,scale=0.8]",
+"\t\\def\\miena{(0,0) to[bend left=90] (2,2) to[bend left=90] (0,0)}",
+"\t\\def\\mienb{(1,0) to[bend left=90] (3,2) to[bend left=90] (1,0)}",
+"\t\\begin{scope}",
+"\t\\clip \\miena;",
+"\t\\draw[pattern=north east lines,pattern color=orange] \\mienb;",
+"\t\\end{scope}",
+"\t\\draw \\miena \\mienb",
+"\t(1,-0.7) node{Biểu đồ Ven minh họa $A \\cap B$}",
+"\t(0.5,1) node{$A$}",
+"\t(2.6,0.9) node{$B$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 3. Hiệu của hai tập hợp
+[
+"\\begin{tikzpicture}[smooth,font=\\footnotesize,scale=1]",
+"\t\\def\\miena{(0,0) to[bend left=90] (2,2) to[bend left=90] (0,0)}",
+"\t\\def\\mienb{(1,0) to[bend left=90] (3,2) to[bend left=90] (1,0)}",
+"\t\\fill[pattern=north east lines,pattern color=orange] \\miena;",
+"\t\\draw[fill=white] \\mienb",
+"\t(1,-0.7) node{Biểu đồ Ven minh họa $A \\setminus B$}",
+"\t(0.5,1) node{$A$}",
+"\t(2.6,0.9) node{$B$};",
+"\t\\draw \\miena ;",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 4. Phần bù của tập con
+[
+"\\begin{tikzpicture}[smooth,font=\\footnotesize,scale=1]",
+"\t\\def\\miena{(0,0) to[bend left=90] (2,2) to[bend left=90] (0,0)}",
+"\t\\def\\mienb{(0.5,0.5) to[bend left=90] (1.5,1.75) to[bend left=90] (0.5,0.5)}",
+"\t\\draw[pattern=dots,pattern color=orange] \\miena;",
+"\t\\draw[fill=white] \\mienb",
+"\t(1,-0.7) node{Biểu đồ Ven minh họa phần bù của $B$ trong $A$}",
+"\t(1,1.2) node{$B$}",
+"\t(0.5,0.1) node{$C_AB$}",
+"\t(2.3,0.8) node{$A$};",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 5. Khoảng (a;b)
+[
+"\\begin{tikzpicture}[>=stealth]",
+"\t\\draw[->](-1,0)->(5,0);",
+"\t\\IntervalLR{-1}{1/2}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{}{}{\\big(}{a}%Gạch xọc phải qua trái",
+"\t\\IntervalLR{4}{4.8}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{\\big)}{b}{}{}%Gạch xọc phải qua trái",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 6. Đoạn [a;b] (Đã fix lỗi double tikzpicture)
+[
+"\\begin{tikzpicture}[>=stealth]",
+"\t\\draw[->](-1,0)->(5,0);",
+"\t\\IntervalLR{-1}{1/2}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{}{}{\\big[}{a}%Gạch xọc phải qua trái",
+"\t\\IntervalLR{4}{4.8}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{\\big]}{b}{}{}%Gạch xọc phải qua trái",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 7. Nửa khoảng [a;+infty)
+[
+"\\begin{tikzpicture}[>=stealth]",
+"\t\\draw[->](-1,0)->(5,0)node[below]{$+\\infty$};",
+"\t\\IntervalLR{-1}{1/2}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{}{}{\\big[}{a}%Gạch xọc phải qua trái",
+"\t\\IntervalLR{4}{4.8}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t%\\IntervalGRF{\\big]}{b}{}{}%Gạch xọc phải qua trái",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 8. Nửa khoảng (-infty;b]
+[
+"\\begin{tikzpicture}[>=stealth]",
+"\t\\draw[->](-1,0)node[below]{$-\\infty$}->(5,0);",
+"\t\\IntervalLR{-1}{1/2}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t%\\IntervalGRF{}{}{\\big[}{a}%Gạch xọc phải qua trái",
+"\t\\IntervalLR{3}{4.8}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{\\big]}{b}{}{}%Gạch xọc phải qua trái",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 9. Nửa khoảng [a;b)
+[
+"\\begin{tikzpicture}[>=stealth]",
+"\t\\draw[->](-1,0)->(5,0);",
+"\t\\IntervalLR{-1}{1/2}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{}{}{\\big[}{a}%Gạch xọc phải qua trái",
+"\t\\IntervalLR{4}{4.8}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{\\big)}{b}{}{}%Gạch xọc phải qua trái",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 10. Nửa khoảng (a;b]
+[
+"\\begin{tikzpicture}[>=stealth]",
+"\t\\draw[->](-1,0)->(5,0);",
+"\t\\IntervalLR{-1}{1/2}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{}{}{\\big(}{a}%Gạch xọc phải qua trái",
+"\t\\IntervalLR{4}{4.8}",
+"\t\\def\\skipInterval{0.5cm}%Khoảng cách đặt nhãn",
+"\t\\IntervalGRF{\\big]}{b}{}{}%Gạch xọc phải qua trái",
+"\\end{tikzpicture}"
+].join("\n"),
+
+// 11. Giao hai tập hợp
+[
+"\\begin{tikzpicture}[font=\\footnotesize, line join=round, line cap=round, >=stealth]",
+"\t\\tikzset{giao/.pic={",
+		"\t\t\t\\draw[->](0,0)--(7,0);",
+		"\t\t\t\\foreach \\i in{0,0.2,...,1.8,5.0,5.2,...,6.8}",
+		"\t\t\t\\draw[red](\\i,0)--++(45:0.15)(\\i,0)--++(-135:0.15);",
+		"\t\t\t\\path(2,0)node[scale=1.75]{$[$}(5,0)node[scale=1.75]{$)$};",
+		"\t\t\t\\path(2,0)node[below=2mm]{$1$}(5,0)node[below=2mm]{$4$};",
+		"\t\t\t\\path(0,0)node[below=2mm]{$-\\infty$}(7,0)node[below=2mm]{$+\\infty$};",
+		"\t}}",
+"\t\\path (0,0)pic{giao};",
+"\\end{tikzpicture}"
+].join("\n")
+];
+
+// Khởi chạy hộp thoại
+if (box.exec() != null) {
+	var result = String(box.get("LuaChonTapHop"));
+	var index = -1;
+	
+	// Tìm index
+	for (var i = 0; i < dsTapHop.length; i++) {
+		if (dsTapHop[i] == result) {
+			index = i;
+			break;
+		}
+	}
+	
+	// Chèn code
+	if (index > -1) {
+		editor.insertSnippet(dataTapHop[index]);
+	} else {
+		alert("Macro chưa nhận dạng được mục bạn vừa chọn!");
+	}
+}

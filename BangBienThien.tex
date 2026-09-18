@@ -1,0 +1,178 @@
+//---------------------------------------
+// Tác giả macro: NGUYỄN THANH PHONG (Cập nhật chuẩn format mới)
+// Chức năng: Chèn Bảng Biến Thiên bằng tkz-tab (Chuẩn hóa tham số)
+// YÊU CẦU: Phải khai báo \usepackage{tkz-tab} trên preamble
+//---------------------------------------
+var box = new UniversalInputDialog();
+box.setWindowTitle("Chèn Bảng Biến Thiên (tkz-tab)");
+
+// Danh sách các bảng biến thiên để đưa vào ComboBox
+var dsBBT = [
+"1. Hàm bậc nhất (y = ax + b)",
+"2. Hàm bậc hai (y = ax^2 + bx + c)",
+"3. Hàm bậc ba: y' có 2 nghiệm phân biệt",
+"4. Hàm bậc ba: y' có nghiệm kép",
+"5. Hàm bậc ba: y' vô nghiệm",
+"6. Trùng phương: y' có 3 nghiệm phân biệt",
+"7. Trùng phương: y' có 1 nghiệm",
+"8. Phân thức bậc 1 / bậc 1",
+"9. Phân thức bậc 2 / bậc 1: y' có 2 nghiệm pb",
+"10. Phân thức bậc 2 / bậc 1: y' có nghiệm kép"
+];
+
+box.add(dsBBT, "Chọn bảng biến thiên:", "LuaChonBBT");
+
+// Lưu trữ 10 đoạn code LaTeX chuẩn hóa
+var dataBBT = [
+// 1. Hàm bậc nhất
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$+\\infty$}",
+"\\tkzTabLine{,+,}",
+"\\tkzTabVar{-/ $-\\infty$ , +/ $+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 2. Hàm bậc hai
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$-\\tfrac{b}{2a}$,$+\\infty$}",
+"\\tkzTabLine{,-,0,+,}",
+"\\tkzTabVar{+/$+\\infty$,-/ $-\\dfrac{\\Delta}{4a}$ ,+/$+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 3. Hàm bậc ba: 2 nghiệm phân biệt
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=3, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$x_1$,$x_2$,$+\\infty$}",
+"\\tkzTabLine{,+,0,-,0,+,}",
+"\\tkzTabVar{-/$-\\infty$,+/$f(x_1)$,-/$f(x_2)$,+/$+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 4. Hàm bậc ba: nghiệm kép
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$x_0$,$+\\infty$}",
+"\\tkzTabLine{,+,0,+,}",
+"\\tkzTabVar{-/$-\\infty$, R/, +/$+\\infty$}",
+"\\tkzTabIma{1}{3}{2}{$f(x_0)$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 5. Hàm bậc ba: vô nghiệm
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$+\\infty$}",
+"\\tkzTabLine{,+,}",
+"\\tkzTabVar{-/$-\\infty$,+/$+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 6. Trùng phương: 3 nghiệm
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=2.5, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$x_1$,$x_2$,$x_3$,$+\\infty$}",
+"\\tkzTabLine{,-,0,+,0,-,0,+,}",
+"\\tkzTabVar{+/$+\\infty$,-/$f(x_1)$,+/$f(x_2)$,-/$f(x_3)$,+/$+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 7. Trùng phương: 1 nghiệm
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$0$,$+\\infty$}",
+"\\tkzTabLine{,-,0,+,}",
+"\\tkzTabVar{+/$+\\infty$,-/$c$,+/$+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 8. Phân thức bậc 1/bậc 1
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$y'$/0.7,$y$/2}",
+"{$-\\infty$,$-\\tfrac{d}{c}$,$+\\infty$}",
+"\\tkzTabLine{,-,d,-,}",
+"\\tkzTabVar{+/$\\dfrac{a}{c}$,-D+/$-\\infty$/$+\\infty$,-/$\\dfrac{a}{c}$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 9. Phân thức bậc 2/bậc 1: 2 nghiệm pb
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=2.5, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$x_1$,$-\\tfrac{e}{d}$,$x_2$,$+\\infty$}",
+"\\tkzTabLine{,-,0,+,d,+,0,-,}",
+"\\tkzTabVar{+/$+\\infty$,-/$f(x_1)$,+D-/$+\\infty$/$-\\infty$,+/$f(x_2)$,-/$-\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n"),
+
+// 10. Phân thức bậc 2/bậc 1: nghiệm kép
+[
+"\\begin{center}",
+"\\begin{tikzpicture}",
+"\\tkzTabInit[nocadre=true, lgt=1.2, espcl=4, deltacl=0.5]",
+"{$x$/0.7,$f'(x)$/0.7,$f(x)$/2}",
+"{$-\\infty$,$-\\tfrac{e}{d}$,$+\\infty$}",
+"\\tkzTabLine{,+,d,+,}",
+"\\tkzTabVar{-/$-\\infty$,+D-/$+\\infty$/$-\\infty$,+/$+\\infty$}",
+"\\end{tikzpicture}",
+"\\end{center}"
+].join("\n")
+];
+
+// Thực thi hộp thoại
+if (box.exec() != null) {
+	var result = String(box.get("LuaChonBBT"));
+	var index = -1;
+	
+	// Tìm vị trí tương ứng
+	for (var i = 0; i < dsBBT.length; i++) {
+		if (dsBBT[i] == result) {
+			index = i;
+			break;
+		}
+	}
+	
+	// Chèn snippet ra TeXstudio
+	if (index > -1) {
+		editor.insertSnippet(dataBBT[index]);
+	} else {
+		alert("Macro chưa nhận dạng được mục bạn vừa chọn!");
+	}
+}

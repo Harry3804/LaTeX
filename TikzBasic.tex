@@ -1,0 +1,153 @@
+//---------------------------------------
+// Tác giả macro: NGUYỄN THANH PHONG
+// Chức năng: Kỹ thuật vẽ hình học phẳng cơ bản (TikZ)
+// Gói phụ thuộc: \usetikzlibrary{calc, intersections, angles, quotes}
+//---------------------------------------
+var box = new UniversalInputDialog();
+box.setWindowTitle("Kỹ thuật vẽ Hình Học Phẳng");
+
+// Danh sách hiển thị trong ComboBox
+var dsHinhHoc = [
+"1. Đánh dấu góc",
+"2. Đặt tên góc (có text)",
+"3. Vòng lặp FOREACH vẽ điểm",
+"4. Vẽ tam giác khi biết 3 cạnh",
+"5. Vẽ tam giác vuông",
+"6. Vẽ tam giác đều",
+"7. Vẽ tam giác cân",
+"8. Phép quay và vị tự",
+"9. Giao điểm của hai đường thẳng",
+"10. Giao điểm 2 đường tròn (lệnh let)",
+"11. Giao điểm của đường thẳng và đường tròn",
+"12. Xác định 2 tiếp điểm (lệnh let)"
+];
+
+box.add(dsHinhHoc, "Chọn đoạn code cần chèn:", "LuaChonHH");
+
+// Mảng chứa code TikZ tương ứng
+var dataHinhHoc = [
+// 1. Đánh dấu góc
+[
+"\t\\draw pic[draw,angle radius=12mm]{angle=C--B--A}; %Theo chiều dương, tùy chọn double,fill=yellow!50,-stealth,dashed"
+].join("\n"),
+
+// 2. Đặt tên góc
+[
+"\t\\draw pic[\"$\\alpha$\",-stealth,angle radius=8mm]{angle=A--C--B}; %Thêm dấu ngoặc kép"
+].join("\n"),
+
+// 3. FOREACH
+[
+"\t\\foreach \\x/\\g in {A/90,B/180,C/-45,D/0}",
+"\t\t\t\\fill[black] \t(\\x) circle (1pt)",
+"\t\t\t($(\\g:3mm)+(\\x)$) node {$\\x$};"
+].join("\n"),
+
+// 4. Vẽ tam giác khi biết 3 cạnh
+[
+"\t\\def\\a{3}",
+"\t\\def\\b{2}",
+"\t\\def\\c{4}",
+"\t\\path \t(0:0) coordinate (B)",
+"\t\t\t++(0:\\a) coordinate (C);",
+"\t\\path[name path=c1]  (B) circle (\\c);",
+"\t\\path[name path=c2]  (C) circle (\\b);",
+"\t\\path[name intersections={of=c1 and c2,by={A,D}}];",
+"\t\\pgfresetboundingbox %Co khung hình ",
+"\t\\draw (A)--(B)--(C)--cycle;",
+"\t\\foreach \\x/ \\goc in {A/135,B/-135,C/-45} ",
+"\t\t\t\\fill (\\x) circle (1pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};"
+].join("\n"),
+
+// 5. Vẽ tam giác vuông
+[
+"\t\\def\\r{3}",
+"\t\\path \t(180:\\r) coordinate (B)",
+"\t\t\t(0:\\r) coordinate (C)\t",
+"\t\t\t(130:\\r) coordinate (A);",
+"\t\\draw (A)--(B)--(C)--cycle",
+"\t\t\tpic[draw,angle radius=2mm]{right angle=B--A--C};",
+"\t\\foreach \\x/ \\goc in {A/135,B/-135,C/-45} ",
+"\t\t\t\\fill (\\x) circle (1pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};"
+].join("\n"),
+
+// 6. Vẽ tam giác đều
+[
+"\t\\def\\a{3}",
+"\t\\path (0:0) coordinate (B)",
+"\t\t\t++(0:\\a) coordinate (C)\t",
+"\t\t\t([turn]120:\\a) coordinate (A);",
+"\t\\draw (A)--(B)--(C)--cycle;",
+"\t\\foreach \\x/ \\goc in {A/135,B/-135,C/-45} ",
+"\t\t\t\\fill (\\x) circle (1pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};"
+].join("\n"),
+
+// 7. Vẽ tam giác cân
+[
+"\t\\def\\a{3}",
+"\t\\def\\h{3.5}",
+"\t\\path \t(0:0) coordinate (B)",
+"\t\t\t++(0:\\a) coordinate (C)",
+"\t\t\t($(B)!0.5!(C)$) coordinate (H)\t",
+"\t\t\t($(H)+(90:\\h)$) coordinate (A);",
+"\t\\draw (A)--(B)--(C)--cycle;",
+"\t\\foreach \\x/ \\goc in {A/135,B/-135,C/-45} ",
+"\t\t\t\\fill (\\x) circle (1pt)",
+"\t\t\t($(\\x)+(\\goc:3mm)$) node {$\\x$};"
+].join("\n"),
+
+// 8. Phép quay và vị tự
+[
+"\t($(A)!k!30:(B)$) coordinate (B')"
+].join("\n"),
+
+// 9. Giao điểm của hai đường thẳng
+[
+"\t(intersection of A--B and C--D) coordinate (I)"
+].join("\n"),
+
+// 10. Giao điểm thứ 2
+[
+"\t\\path [name path=c1] (O_1)  let\\p1=($(O_1)-(A)$) in circle ({veclen(\\x1,\\y1)});",
+"\t\\path [name path=c2] (O_2) circle (\\r);",
+"\t\\path [name intersections={of=c1 and c2,by={C,D}}];"
+].join("\n"),
+
+// 11. Giao điểm của đường thẳng và đường tròn
+[
+"\t\\path \t[name path=c1] (O_1) circle (\\R);",
+"\t\\path \t[name path=NAt] (N)--(At);",
+"\t\\path \t[name intersections={of=c1 and NAt,by={A}}];"
+].join("\n"),
+
+// 12. Xác định 2 tiếp điểm
+[
+"\t\\path \t[name path=c2] (O_2)  let\\p1=($(O_2)-(M)$) in circle ({veclen(\\x1,\\y1)});",
+"\t\\path \t[name path=c3] ($(O_2)!0.5!(E)$) let\\p1=($(O_2)!0.5!(E)-(E)$) in circle ({veclen(\\x1,\\y1)});",
+"\t\\path \t[name intersections={of=c2 and c3,by={J,I}}];"
+].join("\n")
+];
+
+// Khởi chạy hộp thoại
+if (box.exec() != null) {
+	var result = String(box.get("LuaChonHH"));
+	var index = -1;
+	
+	// Tìm index
+	for (var i = 0; i < dsHinhHoc.length; i++) {
+		if (dsHinhHoc[i] == result) {
+			index = i;
+			break;
+		}
+	}
+	
+	// Chèn code
+	if (index > -1) {
+		editor.insertSnippet(dataHinhHoc[index]);
+	} else {
+		alert("Macro chưa nhận dạng được mục bạn vừa chọn!");
+	}
+}

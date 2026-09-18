@@ -1,0 +1,508 @@
+//---------------------------------------
+//	Tác giả macro: Dương Phước Sang
+//---------------------------------------
+box = new UniversalInputDialog();
+box.setWindowTitle("Vẽ cônic biết PT chính tắc")
+box.add("","Phương trình chính tắc của cônic:","PTct");
+box.add(true,"Vẽ 2 đường tiệm cận cho (H)","Tiemcan");
+box.add(true,"Vẽ hình chữ nhật cơ sở cho (E),(H)","HCNcoso");
+box.add(true,"Vẽ các đỉnh","VeDinh");
+box.add(true,"Vẽ các tiêu điểm","VeTieudiem");
+box.add(true,"Lấy điểm M trên cônic","DiemM");
+box.add(true,"Vẽ bán kính qua tiêu","Rquatieu");
+box.add(false,"Ghi toạ độ đỉnh","NodeDinh");
+box.add(false,"Ghi toạ độ tiêu điểm","NodeTieudiem");
+box.add(false,"Vẽ đường chuẩn","Duongchuan");
+box.add(false,"Node phương trình chính tắc","NodePT");
+box.add(false,"Hướng dẫn sử dụng","Help");
+
+function num(stri){
+	stri=stri.replace(/([ \=\t\*])/g,"");
+	if (stri[0]=="\(" && stri[stri.length-1]=="\)")
+	stri=stri.substring(1,stri.length-1);
+	if (stri=="") return 0;
+	else if (stri=="+") return 1;
+	else if (stri=="-") return -1;
+	else if (stri.indexOf("/")>-1) {
+		var stri1=Number(stri.substring(0,stri.indexOf("/")));
+		var stri2=Number(stri.substring(1+stri.indexOf("/")),stri.length);
+		return stri1/stri2;
+	}
+	else if (stri.length>2 && stri.substring(stri.length-2,stri.length)=="\^2") {
+		var stri1=Number(stri.substring(0,stri.indexOf("\^2")));
+		return stri1*stri1;
+	}
+	else if (stri.length>2 && stri.substring(stri.length-2,stri.length)=="\^3") {
+		var stri1=Number(stri.substring(0,stri.indexOf("\^3")));
+		return stri1*stri1*stri1;
+	}
+	else if (stri.indexOf("sqrt")>-1) {
+		if (stri[0]=="+") stri=stri.substring(1,stri.length);
+		if (stri.indexOf("sqrt")==0) {
+			var stri1=Number(stri.substring(4,stri.length));
+			return Math.sqrt(stri1);
+		}
+		else if (stri[0]=="-") {
+			stri=stri.substring(1,stri.length);
+			if (stri.indexOf("sqrt")==0) {
+				var stri1=Number(stri.substring(4,stri.length));
+				return -Math.sqrt(stri1);
+			}
+			else {
+				var stri1=Number(stri.substring(0,stri.indexOf("sqrt")));
+				var stri2=Number(stri.substring(4+stri.indexOf("sqrt"),stri.length));
+				return -Math.sqrt(stri1*stri1*stri2);
+			}
+		}
+		else {
+			var stri1=Number(stri.substring(0,stri.indexOf("sqrt")));
+			var stri2=Number(stri.substring(4+stri.indexOf("sqrt"),stri.length));
+			return Math.sqrt(stri1*stri1*stri2);
+		}
+		
+	}
+	else return Number(stri);
+};
+function fracS(num){			//######## Tạo biểu thức dạng String: 'm/n' để tính toán trong Tikz
+	for(var n=2;n<49;n++){
+		if (Math.round(1000000*num)/1000000!= Math.round(num) && Math.round(1000000*n*num)/1000000==Math.round(n*num)) {
+			return Math.round(n*num)+"/"+n;
+			break;
+		}
+		else if(n==48) return Math.round(100*num)/100;
+	}
+};
+function fracN(num){			//######## Tạo biểu thức String dạng '\frac{m}{n}' ghi cho các Node
+	for(var n=2;n<49;n++){
+		if (Math.round(1000000*num)/1000000!= Math.round(num) && Math.round(1000000*n*num)/1000000==Math.round(n*num)) {
+			return "\\frac{"+Math.round(n*num)+"}{"+n+"}";
+			break;
+		}
+		else if(n==48) return Math.round(10*num)/10;
+	}
+};
+function formatS(num){			//######## Tạo biểu thức String dạng 'sqrt n', dùng tính toán trong Tikz
+	if (num<0) var Dau="-";
+	else Dau="";
+	if (Math.round(1000000*num)/1000000==Math.round(num))
+	return Dau+Math.round(Math.abs(num));
+	else if (Math.round(1000000*num*num)/1000000==Math.round(num*num)) {
+		for(var n=40;n>1;n--){
+			if (Math.round(1000000*num*num/(n*n))/1000000== Math.round(num*num/(n*n))) {
+				return Dau+n+"*sqrt "+Math.round(num*num/(n*n));
+				break;
+			}
+			else if(n==2) return Dau+"sqrt "+Math.round(num*num);
+		}
+	}
+	else 
+	for(var n=2;n<41;n++){
+		if (Math.round(1000000*num*num*n*n)/1000000== Math.round(num*num*n*n) && Math.round(1000000*Math.sqrt(num*num*n*n))/1000000!= Math.round(Math.sqrt(num*num*n*n))) {
+			for(var m=40;m>1;m--){
+				if (Math.round(1000000*num*num*n*n/(m*m))/1000000== Math.round(num*num*n*n/(m*m))) {
+					return Dau+m+"*sqrt "+Math.round(num*num*n*n/(m*m))+"/"+n;
+					break;
+				}
+				else if(m==2) return Dau+"sqrt "+Math.round(num*num*n*n)+"/"+n;
+			}
+			break;
+		}
+		else if(n==40) return Dau+fracS(Math.abs(num));
+	}
+};
+function formatN(num){			//######## Tạo biểu thức String dạng '\sqrt{n}', ghi cho các Node
+	if (num<0) var Dau="-";
+	else Dau="";
+	if (Math.round(1000000*num)/1000000==Math.round(num))
+	return Dau+Math.round(Math.abs(num));
+	else if (Math.round(1000000*num*num)/1000000==Math.round(num*num)) {
+		for(var n=40;n>1;n--){
+			if (Math.round(1000000*num*num/(n*n))/1000000== Math.round(num*num/(n*n))) {
+				return Dau+n+"\\sqrt{"+Math.round(num*num/(n*n))+"}";
+				break;
+			}
+			else if(n==2) return Dau+"\\sqrt{"+Math.round(num*num)+"}";
+		}
+	}
+	else 
+	for(var n=2;n<41;n++){
+		if (Math.round(1000000*num*num*n*n)/1000000== Math.round(num*num*n*n) && Math.round(1000000*Math.sqrt(num*num*n*n))/1000000!= Math.round(Math.sqrt(num*num*n*n))) {
+			for(var m=40;m>1;m--){
+				if (Math.round(1000000*num*num*n*n/(m*m))/1000000== Math.round(num*num*n*n/(m*m))) {
+					return Dau+"\\frac{"+m+"\\sqrt{"+Math.round(num*num*n*n/(m*m))+"}}{"+n+"}";
+					break;
+				}
+				else if(m==2) return Dau+"\\frac{"+"\\sqrt{"+Math.round(num*num*n*n)+"}}{"+n+"}";
+			}
+			break;
+		}
+		else if(n==40) return Dau+fracN(Math.abs(num));
+	}
+};
+
+if (box.exec()!=null){
+	var fx=box.get("PTct").replace(/([ \t\*]*)/g,"");
+	var VTfx="+"+fx.substring(0,fx.indexOf("="));
+	VTfx=VTfx.replace(/(\+\-)/,"\-");
+	var VPfx="+"+fx.substring(1+fx.indexOf("="),fx.length);
+	VPfx=VPfx.replace(/(\+\-)/,"\-");
+	//-- Help --
+	var strHelp="Cách nhập thông số đơn giản nhất để Tools vẽ được cônic là:\n";
+	strHelp=strHelp+"       + Elip:              E, a, b          (tên viết tắt và 2 bán trục)\n";
+	strHelp=strHelp+"       + Hypebol:     H, a, b          (tên viết tắt và 2 bán trục)\n";
+	strHelp=strHelp+"       + Parabol:       P, p             (tên viết tắt và tham số tiêu)\n";
+	strHelp=strHelp+"Hoặc nhập dạng phương trình chính tắc đã thu gọn kiểu như:\n";
+	strHelp=strHelp+"       + Elip:              x^2/A + y^2/B \= 1\n";
+	strHelp=strHelp+"       + Hypebol:     x^2/A  - y^2/B \= 1\n";
+	strHelp=strHelp+"       + Parabol:       y^2 \= Px\n";
+	strHelp=strHelp+"Còn không, hãy nhập phương trình cônic như dưới đây:\n";
+	strHelp=strHelp+"       + Elip:              A x^2/B + Cy^2/D \= E\n";
+	strHelp=strHelp+"       + Hypebol:     A x^2/B  - Cy^2/D \= E\n";
+	strHelp=strHelp+"       + Parabol:       A y^2/B \= Px/Q\n";
+	strHelp=strHelp+"-----------------------------------------------------------------\n";
+	strHelp=strHelp+"- Các hệ số có thể nhập dạng phân số m/n, dạng căn sqrt n.\n";
+	strHelp=strHelp+"- Khỏi nhập hệ số A, C, P khi chúng bằng 1.\n";
+	strHelp=strHelp+"- Khỏi nhập mẫu /B, /D, /Q khi B, D, Q bằng 1.\n";
+	strHelp=strHelp+"- Mẫu B, D, Q nhập dạng m/n tools vẫn hiểu.\n";
+	strHelp=strHelp+"- Không cần nhập dấu * cho phép nhân giữa số với biến.\n";
+	strHelp=strHelp+"- Tools sẽ tự chuyển phương trình về dạng chính tắc.\n";
+	
+	var a=0; var a1=0; var a2=1; var c=0; var aM2=0; var bM2=0;
+	var b=0; var b1=0; var b2=1; var p=0; var Hp=0; var cM2=0;
+	var LoaiConic="";
+	if (box.get("Help")) alert(strHelp);
+	else if ((fx.indexOf("x")<0 || fx.indexOf("y")<0 || fx.indexOf("=")<0) && fx.search(/[EHeh],[sqrt0-9\/\.]{1,},[sqrt0-9\/\.]{1,}/g)<0 && fx.search(/[Pp],[sqrt0-9\/\.]{1,}/g)<0)
+	alert("Có lẽ bạn chưa nhập phương trình cho cônic cần vẽ thì phải!");
+	else {
+		//================= Lưu bộ các hệ số cho phương trình chính tắc ============
+		//--- Kiểu nhập liệu gọn nhẹ -----
+		if (fx.search(/[EHeh],[sqrt0-9\/\.]{1,},[sqrt0-9\/\.]{1,}/g)>-1) {
+			a1=fx.substring(2,fx.length);
+			a=num(a1.substring(0,a1.indexOf(",")));				aM2=Math.round(100000000*a*a)/100000000;
+			b=num(a1.substring(1+a1.indexOf(","),a1.length));	bM2=Math.round(100000000*b*b)/100000000;
+			if (fx[0]=="H" || fx[0]=="h") {
+				LoaiConic="hypebol";	cM2=aM2+bM2;	c=Math.sqrt(cM2);
+			}
+			else if ((fx[0]=="E" || fx[0]=="e") && a>b) {
+				LoaiConic="elip"; 		cM2=aM2-bM2;	c=Math.sqrt(cM2);
+			}
+		}
+		if (fx.search(/[Pp],[sqrt0-9\/\.]{1,}/g)>-1) {
+			p=num(fx.substring(2,fx.length));	Hp=2*p;
+			if (fx[0]=="P" || fx[0]=="p")
+			LoaiConic="parabol";
+		}
+		//--- Kiểu nhập bằng phương trình theo x,y -----
+		else if (VTfx.indexOf("x\^2")>-1 && VPfx.search(/[x0-9]{1,}/g)>-1 &&
+		VTfx.substring(1+VTfx.indexOf("x\^2"),VTfx.length).indexOf("y\^2")>-1 &&
+		VTfx.substring(1+VTfx.indexOf("x\^2"),VTfx.indexOf("y\^2")).search(/[\+\-]/g)>-1) {
+			a1=num(VTfx.substring(0,VTfx.indexOf("x\^2")));
+			VTfx=VTfx.substring(3+VTfx.indexOf("x\^2"),VTfx.length);
+			if (VTfx[0]=="\/")
+			a2=num(VTfx.substring(1,VTfx.search(/([\+\-])/g)));
+			VTfx=VTfx.substring(VTfx.search(/([\+\-])/g),VTfx.length);
+			b1=num(VTfx.substring(0,VTfx.indexOf("y\^2")));
+			VTfx=VTfx.substring(3+VTfx.indexOf("y\^2"),VTfx.length);
+			if (VTfx[0]=="\/")
+			b2=num(VTfx.substring(1,VTfx.length));
+			c=num(VPfx);
+			if (a1*a2*b1*b2*c != 0) {
+				aM2=a2*c/a1; a=Math.sqrt(Math.abs(aM2));
+				bM2=b2*c/b1; b=Math.sqrt(Math.abs(bM2));
+				if (aM2*bM2<0) {
+					LoaiConic="hypebol";
+					aM2=Math.abs(aM2);	bM2=Math.abs(bM2);
+					cM2=aM2+bM2; 		c=Math.sqrt(cM2);
+				}
+				else if (a>b) {
+					LoaiConic="elip";
+					aM2=Math.abs(aM2);	bM2=Math.abs(bM2);
+					cM2=aM2-bM2; 		c=Math.sqrt(cM2);
+				}
+				else if (a<b) {
+					LoaiConic="elip";
+					alert("Tools không được lập trình để vẽ elip có tiêu điểm trên trục tung. Bạn thông cảm!");
+				}
+				else 
+				alert("Có khi nào bạn đã nhập phương trình đường tròn không!");
+			}
+		}
+		//--------------------- Parabol ---------------------
+		else if (VTfx.indexOf("y\^2")>-1 && VPfx.indexOf("x")>-1){
+			a1=num(VTfx.substring(0,VTfx.indexOf("y\^2")));
+			VTfx=VTfx.substring(3+VTfx.indexOf("y\^2"),VTfx.length);
+			if (VTfx[0]=="\/")
+			a2=num(VTfx.substring(1,VTfx.length));
+			b1=num(VPfx.substring(0,VPfx.indexOf("x")));
+			VPfx=VPfx.substring(1+VPfx.indexOf("x"),VPfx.length);
+			if (VPfx[0]=="\/")
+			b2=num(VPfx.substring(1,VPfx.length));
+			if (a1*a2*b1*b2 > 0) {
+				Hp=(a2*b1)/(a1*b2);	p=Hp/2;
+				LoaiConic="parabol";
+			}
+		}
+		var d=Math.round(10*aM2/c)/10;
+		pM2=Math.round(100000000*p*p)/100000000;
+		//====================== Vẽ các đường cônic =============================
+		var str=""; var scal=1; var defM=[]; var DrawM=[]; var NodeA=[]; var NodeF=[];
+		var xm=Math.round(10*(-a-1))/10;	var xM=Math.round(10*(a+1))/10;
+		var ym=Math.round(10*(-b-1))/10;	var yM=Math.round(10*(b+1))/10;
+		///////////// === VẼ ELIP ===//////////////
+		if (LoaiConic=="elip" && a>b) {
+			scal=Math.round(230/a)/100;
+			if (a>2.5) {
+				xm=Math.round(10*(-a*1.4))/10;	xM=Math.round(10*(a*1.4))/10;
+			}
+			if (b>2.5) {
+				ym=Math.round(10*(-b*1.4))/10;	yM=Math.round(10*(b*1.4))/10;
+			}
+			if (box.get("Duongchuan")) {
+				xm=Math.round(10*(-1.4*a*a/c))/10;	xM=Math.round(10*(1.4*a*a/c))/10;
+			}
+			if (box.get("VeDinh") || box.get("NodeDinh")) {
+				defM.push("{-"+formatS(Math.sqrt(aM2))+"}/0/A_1");		defM.push(" {"+formatS(Math.sqrt(aM2))+"}/0/A_2");
+				defM.push(" 0/{-"+formatS(Math.sqrt(bM2))+"}/B_1");		defM.push(" 0/{"+formatS(Math.sqrt(bM2))+"}/B_2");
+				if (box.get("VeDinh")) {
+					DrawM.push("A_1/-135");		DrawM.push(" A_2/-40");
+					DrawM.push(" B_1/-45");		DrawM.push(" B_2/40");
+				}
+				if (box.get("NodeDinh")) {
+					NodeA.push("A_1/-"+formatN(Math.sqrt(aM2))+"/150/"+Math.round(120/scal)/10);		NodeA.push(" A_2/"+formatN(Math.sqrt(aM2))+"/45/"+Math.round(100/scal)/10);
+					NodeA.push(" B_1/-"+formatN(Math.sqrt(bM2))+"/-150/"+Math.round(120/scal)/10);	NodeA.push(" B_2/"+formatN(Math.sqrt(bM2))+"/135/"+Math.round(100/scal)/10);
+				}
+			}
+			if (box.get("VeTieudiem") || box.get("Rquatieu") || box.get("NodeTieudiem") || box.get("Duongchuan")) {
+				defM.push(" {-"+formatS(Math.sqrt(cM2))+"}/0/F_1");		NodeF.push("F_1/-95/-"+formatN(Math.sqrt(cM2)));
+				defM.push(" {"+formatS(Math.sqrt(cM2))+"}/0/F_2");		NodeF.push("F_2/-90/"+formatN(Math.sqrt(cM2)));
+				if (box.get("Rquatieu")) {
+					DrawM.push(" F_1/135");	DrawM.push(" F_2/45");
+				}
+				else if (box.get("VeTieudiem")){
+					DrawM.push(" F_1/90");	DrawM.push(" F_2/90");	
+				}
+			}
+			if (box.get("HCNcoso")) {
+				defM.push(" {-"+formatS(Math.sqrt(aM2))+"}/{"+formatS(Math.sqrt(bM2))+"}/P");	DrawM.push(" P/135");
+				defM.push(" {"+formatS(Math.sqrt(aM2))+"}/{"+formatS(Math.sqrt(bM2))+"}/Q");	DrawM.push(" Q/45");
+				defM.push(" {"+formatS(Math.sqrt(aM2))+"}/{-"+formatS(Math.sqrt(bM2))+"}/R");	DrawM.push(" R/-45");
+				defM.push(" {-"+formatS(Math.sqrt(aM2))+"}/{-"+formatS(Math.sqrt(bM2))+"}/S");DrawM.push(" S/-135");
+			}
+			str=str+"\\begin{tikzpicture}[scale="+scal+",font=\\footnotesize,samples=200,>=stealth]";
+			if (box.get("DiemM") || box.get("Rquatieu")) {
+				str=str+"\n\\def\\gM{130};";
+				DrawM.push(" M/\\gM");
+			}
+			str=str+"\n\\draw[->] ("+xm+",0)--("+xM+",0) node[below]{$x$};";
+			str=str+"\n\\draw[->] (0,"+ym+")--(0,"+yM+") node[left]{$y$};";
+			str=str+"\n\\node at (0,0) [below left=-1pt]{$O$};";
+			//str=str+"\n\\clip ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+			if (box.get("DiemM") || box.get("Rquatieu"))
+			str=str+"\n\\coordinate (M) at (\\gM:"+formatS(Math.sqrt(aM2))+" and "+formatS(Math.sqrt(bM2))+");";
+			if (defM.length>0) {
+				for (var i=0;i<defM.length;i++) {
+					defM[i]=defM[i].replace(/({)([ \+\-\.sqrt\{\}0-9]{1,})(})/g,"$2")
+				}
+				str=str+"\n\\foreach \\x\\y\\n in {"+defM+"}";
+				str=str+"\n\\coordinate (\\n) at (\\x,\\y);";
+			}
+			if (box.get("HCNcoso")) 
+			str=str+"\n\\draw[dashed] (P) rectangle (R);";
+			str=str+"\n\\draw (0,0) ellipse ("+formatS(Math.sqrt(aM2))+" and "+formatS(Math.sqrt(bM2))+");";
+			if (box.get("Rquatieu") && !box.get("Duongchuan"))
+			str=str+"\n\\draw (F_1)--(M)--(F_2);";
+			if (box.get("NodePT"))
+			str=str+"\n\\node at ("+formatS(Math.sqrt(aM2))+","+formatS(Math.sqrt(bM2))+")[above left]{$\\dfrac{x^2}{"+formatN(aM2)+"}+\\dfrac{y^2}{"+formatN(bM2)+"}=1$};";
+			if (DrawM.length>0) {
+				str=str+"\n %----- Vẽ các điểm [có node] -----";
+				str=str+"\n\\foreach \\n\\g in {"+DrawM+"}";
+				str=str+"\n\\fill (\\n)circle("+Math.round(10/scal)/10+"pt) +(\\g:"+Math.round(80/scal)/10+"pt)node{$\\n$};";
+			}
+			if (NodeA.length>0 && box.get("NodeDinh")) {
+				str=str+"\n %----- Điền số tại các đỉnh -----";
+				str=str+"\n\\foreach \\n\\t\\g\\r in {"+NodeA+"}";
+				str=str+"\n\\path (\\n)+(\\g:\\r pt)node{$\\t$};";
+			}
+			if (NodeF.length>0 && box.get("NodeTieudiem")) {
+				str=str+"\n %----- Điền số tại 2 tiêu điểm -----";
+				str=str+"\n\\foreach \\n\\g\\t in {"+NodeF+"}";
+				str=str+"\n\\path (\\n)+(\\g:"+Math.round(70/scal)/10+"pt)node{$\\t$};";
+			}
+			if (box.get("Duongchuan")) {
+				str=str+"\n %----- Vẽ đường chuẩn và tính chất -----";
+				str=str+"\n\\draw (-"+d+","+ym+")--(-"+d+","+yM+")node[pos=0.97,left]{$\\Delta_1$};";
+				str=str+"\n\\node at (-"+d+",0)[below left=-1pt]{$"+(-d)+"$};";
+				str=str+"\n\\draw ("+d+","+ym+")--("+d+","+yM+")node[pos=0.97,right]{$\\Delta_2$};";
+				str=str+"\n\\node at ("+d+",0)[below right=-1pt]{$"+d+"$};";
+				if (box.get("Rquatieu")) {
+					str=str+"\n\\draw (F_1)--(M)--(F_2);";
+					str=str+"\n\\draw (-"+d+","+b+"*sin \\gM)--("+d+","+b+"*sin \\gM);";
+				}
+			}
+			str=str+"\n\\end{tikzpicture}";
+			editor.insertSnippet(str);
+		}
+		//////// === VẼ HYPEBOL ===//////////
+		else if (LoaiConic=="hypebol") {
+			scal=Math.round(150/a)/100;
+			xm=Math.round(-10*a*1.9)/10;
+			xM=Math.round(10*a*1.93)/10;
+			if (box.get("VeTieudiem") || box.get("Rquatieu")) {
+				xM=Math.round(10*Math.max(xM,c+1))/10;  xm=-xM+0.1;
+			}
+			yM=Math.round(10*b*xM/a)/10; 			ym=-yM;
+			if (box.get("VeDinh") || box.get("NodeDinh")) {
+				defM.push("{-"+formatS(Math.sqrt(aM2))+"}/0/A_1");		defM.push(" {"+formatS(Math.sqrt(aM2))+"}/0/A_2");
+				defM.push(" 0/{-"+formatS(Math.sqrt(bM2))+"}/B_1");		defM.push(" 0/{"+formatS(Math.sqrt(bM2))+"}/B_2");
+				if (box.get("VeDinh")) {
+					DrawM.push("A_1/-40");		DrawM.push(" A_2/-140");
+					DrawM.push(" B_1/-45");		DrawM.push(" B_2/40");
+				}
+				if (box.get("NodeDinh")) {
+					NodeA.push("A_1/-"+formatN(Math.sqrt(aM2))+"/40/"+Math.round(100/scal)/10);		NodeA.push(" A_2/"+formatN(Math.sqrt(aM2))+"/140/"+Math.round(90/scal)/10);
+					NodeA.push(" B_1/-"+formatN(Math.sqrt(bM2))+"/-150/"+Math.round(120/scal)/10);	NodeA.push(" B_2/"+formatN(Math.sqrt(bM2))+"/135/"+Math.round(100/scal)/10);
+				}
+			}
+			if (box.get("VeTieudiem") || box.get("Rquatieu") || box.get("NodeTieudiem") || box.get("Duongchuan")) {
+				defM.push(" {-"+formatS(Math.sqrt(cM2))+"}/0/F_1");		NodeF.push("F_1/95/-"+formatN(Math.sqrt(cM2)));
+				defM.push(" {"+formatS(Math.sqrt(cM2))+"}/0/F_2");		NodeF.push("F_2/90/"+formatN(Math.sqrt(cM2)));
+				if (box.get("VeTieudiem")){
+					DrawM.push(" F_1/-90");	DrawM.push(" F_2/-90");
+				}
+			}
+			if (box.get("HCNcoso")) {
+				if (box.get("Tiemcan")) {
+					defM.push(" {-"+formatS(Math.sqrt(aM2))+"}/{"+formatS(Math.sqrt(bM2))+"}/P");	DrawM.push(" P/70");
+					defM.push(" {"+formatS(Math.sqrt(aM2))+"}/{"+formatS(Math.sqrt(bM2))+"}/Q");	DrawM.push(" Q/110");
+					defM.push(" {"+formatS(Math.sqrt(aM2))+"}/{-"+formatS(Math.sqrt(bM2))+"}/R");	DrawM.push(" R/-110");
+					defM.push(" {-"+formatS(Math.sqrt(aM2))+"}/{-"+formatS(Math.sqrt(bM2))+"}/S");DrawM.push(" S/-70");
+				}
+				else {
+					defM.push(" {-"+formatS(Math.sqrt(aM2))+"}/{"+formatS(Math.sqrt(bM2))+"}/P");	DrawM.push(" P/135");
+					defM.push(" {"+formatS(Math.sqrt(aM2))+"}/{"+formatS(Math.sqrt(bM2))+"}/Q");	DrawM.push(" Q/45");
+					defM.push(" {"+formatS(Math.sqrt(aM2))+"}/{-"+formatS(Math.sqrt(bM2))+"}/R");	DrawM.push(" R/-45");
+					defM.push(" {-"+formatS(Math.sqrt(aM2))+"}/{-"+formatS(Math.sqrt(bM2))+"}/S");DrawM.push(" S/-135");
+				}
+			}
+			str=str+"\\begin{tikzpicture}[scale="+scal+",font=\\footnotesize,samples=200,>=stealth]";
+			if (box.get("DiemM") || box.get("Rquatieu")) {
+				str=str+"\n\\def\\yM{"+Math.round(4*yM)/10+"};";
+				str=str+"\n\\pgfmathsetmacro{\\xM}{"+formatS(Math.sqrt(aM2/bM2))+"*sqrt((\\yM)^2+"+formatS(bM2)+")};";
+				defM.push(" \\xM/\\yM/M");	DrawM.push(" M/-30");
+			}
+			str=str+"\n\\draw[->] ("+xm+",0)--("+xM+",0) node[below]{$x$};";
+			str=str+"\n\\draw[->] (0,"+ym+")--(0,"+yM+") node[left]{$y$};";
+			str=str+"\n\\node at (0,0) [below left=-1pt]{$O$};";
+			//str=str+"\n\\clip ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+			if (defM.length>0) {
+				for (var i=0;i<defM.length;i++) {
+					defM[i]=defM[i].replace(/({)([ \+\-\.sqrt\{\}0-9]{1,})(})/g,"$2")
+				}
+				str=str+"\n\\foreach \\x\\y\\n in {"+defM+"}";
+				str=str+"\n\\coordinate (\\n) at (\\x,\\y);";
+			}
+			if (box.get("HCNcoso") || box.get("Tiemcan")) {
+				str=str+"\n\\draw[dashed] (P) rectangle (R)";
+				if (box.get("Tiemcan")) {
+					str=str+"\n ("+xm+","+Math.round(100*b*xm/a)/100+")--("+xM+","+Math.round(100*b*xM/a)/100+")";
+					str=str+"\n ("+xm+","+Math.round(-100*b*xm/a)/100+")--("+xM+","+Math.round(-100*b*xM/a)/100+")";
+				}
+				str=str+";";
+			}
+			var a0=Math.ceil(1000*a)/1000;
+			if (b!=Math.round(b)) var b0=Math.round(100*b)/100-0.01;
+			else var b0=b;
+			str=str+"\n\\draw";
+			str=str+"\n plot[domain="+xm+":-"+a0+"](\\x,{"+formatS(Math.sqrt(bM2/aM2))+"*sqrt((\\x)^2-"+formatS(aM2)+")})";
+			str=str+"\n--plot[domain=-"+a0+":"+xm+"](\\x,{-"+formatS(Math.sqrt(bM2/aM2))+"*sqrt((\\x)^2-"+formatS(aM2)+")})";
+			str=str+"\n plot[domain="+xM+":"+a0+"](\\x,{"+formatS(Math.sqrt(bM2/aM2))+"*sqrt((\\x)^2-"+formatS(aM2)+")})";
+			str=str+"\n--plot[domain="+a0+":"+xM+"](\\x,{-"+formatS(Math.sqrt(bM2/aM2))+"*sqrt((\\x)^2-"+formatS(aM2)+")})";
+			if (box.get("NodePT"))
+			str=str+"\n node[above=0.6cm]{$\\dfrac{x^2}{"+formatN(aM2)+"}-\\dfrac{y^2}{"+formatN(bM2)+"}=1$}";
+			str=str+";";
+			if (box.get("Rquatieu"))
+			str=str+"\n\\draw (F_1)--(M)--(F_2);";
+			if (DrawM.length>0) {
+				str=str+"\n %----- Vẽ các điểm [có node] -----";
+				str=str+"\n\\foreach \\n\\g in {"+DrawM+"}";
+				str=str+"\n\\fill (\\n)circle("+Math.round(10/scal)/10+"pt) +(\\g:"+Math.round(80/scal)/10+"pt)node{$\\n$};";
+			}
+			if (NodeA.length>0 && box.get("NodeDinh")) {
+				str=str+"\n %----- Điền số tại các đỉnh -----";
+				str=str+"\n\\foreach \\n\\t\\g\\r in {"+NodeA+"}";
+				str=str+"\n\\path (\\n)+(\\g:\\r pt)node{$\\t$};";
+			}
+			if (NodeF.length>0 && box.get("NodeTieudiem")) {
+				str=str+"\n %----- Điền số tại 2 tiêu điểm -----";
+				str=str+"\n\\foreach \\n\\g\\t in {"+NodeF+"}";
+				str=str+"\n\\path (\\n)+(\\g:"+Math.round(70/scal)/10+"pt)node{$\\t$};";
+			}
+			if (box.get("Duongchuan")) {
+				str=str+"\n %----- Vẽ đường chuẩn và tính chất -----";
+				str=str+"\n\\draw (-"+d+","+ym+")--(-"+d+","+yM+")node[pos=0.05,right]{$\\Delta_1$};";
+				str=str+"\n\\node at (-"+d+",0)[below right=-1pt]{$"+(-d)+"$};";
+				str=str+"\n\\draw ("+d+","+ym+")--("+d+","+yM+")node[pos=0.05,left]{$\\Delta_2$};";
+				str=str+"\n\\node at ("+d+",0)[below left=-1pt]{$"+d+"$};";
+			}
+			str=str+"\n\\end{tikzpicture}";
+			editor.insertSnippet(str);
+		}
+		//////// === VẼ PARABOL ===//////////
+		else if (LoaiConic=="parabol") {
+			scal=Math.round(125/p)/100;
+			xm=Math.round(-11*p)/10;				xM=Math.round(16*p)/10;
+			yM=Math.round(10*Math.sqrt(Hp*xM))/10; 	ym=-yM;
+			
+			str=str+"\\begin{tikzpicture}[scale="+scal+",font=\\footnotesize,samples=200,>=stealth]";
+			if (box.get("DiemM") || box.get("Rquatieu")) {
+				str=str+"\n\\def\\yM{"+Math.round(8*yM)/10+"};";
+				str=str+"\n\\pgfmathsetmacro{\\xM}{\\yM^2/("+formatS(Hp)+")};";
+			}
+			var xMn=Math.round(10*(xM+0.3/scal))/10;
+			var yMn=Math.round(10*(yM+0.3/scal))/10;
+			str=str+"\n\\draw[->] ("+xm+",0)--("+xMn+",0) node[below]{$x$};";
+			str=str+"\n\\draw[->] (0,"+ym+")--(0,"+yMn+") node[left]{$y$};";
+			str=str+"\n\\node at (0,0) [below left=-2pt]{$O$};";
+			//str=str+"\n\\clip ("+xm+","+ym+") rectangle ("+xM+","+yM+");";
+			if (box.get("VeTieudiem") || box.get("DiemM") || box.get("Rquatieu")) {
+				str=str+"\n\\fill ";
+				if (box.get("VeTieudiem") || box.get("Rquatieu"))
+				str=str+"("+formatS(p/2)+",0) circle("+Math.round(12/scal)/10+"pt) coordinate (F)";
+				if (!box.get("NodeTieudiem"))
+				str=str+" +(-90:"+Math.round(8/scal)+"pt)node{$F$}";
+				else
+				str=str+" +(130:"+Math.round(8/scal)+"pt)node{$F$}";
+				if (box.get("DiemM") || box.get("Rquatieu"))
+				str=str+"\n(\\xM,\\yM) circle("+Math.round(12/scal)/10+"pt) coordinate (M) +(110:"+Math.round(8/scal)+"pt)node{$M$}";
+				str=str+";";
+			}
+			if (box.get("Duongchuan")) {
+				str=str+"\n\\coordinate (H) at (-"+formatS(p/2)+",\\yM);";
+				str=str+"\n\\coordinate (D) at (-"+formatS(p/2)+",0);";
+				str=str+"\n\\draw (-"+formatS(p/2)+","+ym+")--(-"+formatS(p/2)+","+yM+") node[pos=0.1,left]{$\\Delta$};";
+			}
+			if (box.get("Rquatieu")) {
+				str=str+"\n\\draw (F)--(M)";
+				if (box.get("Duongchuan"))
+				str=str+"node[pos=0.5,sloped]{$|$} \n(H)--(M)node[pos=0.5,sloped]{$|$}";
+				str=str+";";
+			}
+			if (box.get("Duongchuan") && box.get("Rquatieu"))
+			str=str+"\n\\path pic[draw,angle radius=4]{right angle=M--H--D};";
+			str=str+"\n\\draw plot[domain="+xM+":0](\\x,{sqrt("+formatS(Hp)+"*\\x)})";
+			str=str+"\n--plot[domain=0:"+xM+"](\\x,{-sqrt("+formatS(Hp)+"*\\x)})";
+			if (box.get("NodePT"))
+			str=str+"\n node[below]{$y^2="+formatN(Hp)+"\\,x$}";
+			str=str+";";
+			if (box.get("NodeTieudiem"))
+			str=str+"\n\\node at (F)[below]{$"+formatN(p/2)+"$};";
+			if (box.get("Duongchuan"))
+			str=str+"\n\\node at (D)[below left=-2pt]{$-"+formatN(p/2)+"$};";
+			str=str+"\n\\end{tikzpicture}";
+			editor.insertSnippet(str);
+		}
+		else {
+			alert("Bạn cần nhập đúng phương trình cônic đảm bảo có thể đưa được về dạng phương trình chính tắc chuẩn sách giáo khoa theo hướng dẫn của Tools nhé!");
+		}
+	}
+}
